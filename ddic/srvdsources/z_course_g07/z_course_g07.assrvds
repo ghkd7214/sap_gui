@@ -1,0 +1,4 @@
+@EndUserText.label: 'Service Definition'
+define service Z_course_g07 {
+  expose zc_course_g07;
+}

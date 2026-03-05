@@ -1,0 +1,89 @@
+*&---------------------------------------------------------------------*
+*& Report ZMENTORING_03_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zmentoring_04_g07.
+
+INCLUDE zmentoring_04_g07_top.
+INCLUDE zmentoring_04_g07_f01.
+INCLUDE zmentoring_04_g07_c01.
+INCLUDE zmentoring_04_g07_o01.
+INCLUDE zmentoring_04_g07_i01.
+
+INITIALIZATION.
+  DATA: lv_start_date TYPE datum,
+        lv_end_date   TYPE datum.
+
+*  CALL FUNCTION 'BKK_GET_QUARTER_DATE'
+*    EXPORTING
+*      i_date          = sy-datum
+*    IMPORTING
+*      e_quarter_start = lv_start_date
+*      e_quarter_end   = lv_end_date.
+
+  IF sy-datum+4(2) BETWEEN '01' AND '06' .
+    lv_start_date = |{ sy-datum(4) }0101|.
+    lv_end_date   = |{ sy-datum(4) }0630|.
+  ELSE.
+    lv_start_date = |{ sy-datum(4) }0701|.
+    lv_end_date   = |{ sy-datum(4) }1231|.
+  ENDIF.
+
+  so_car-sign   = 'I'.
+  so_car-option = 'BT'.
+  so_car-low  =  'AA'.
+  so_car-high =  'UA'.
+  APPEND so_car.
+
+  so_fld-sign   = 'I'.
+  so_fld-option = 'BT'.
+  so_fld-low  =  lv_start_date.
+  so_fld-high =  lv_end_date.
+  APPEND so_fld.
+
+START-OF-SELECTION.
+  SELECT sp~carrid
+         sp~connid
+         sf~fldate
+         sp~cityfrom
+         sp~cityto
+         sf~seatsmax
+         sf~seatsocc
+    INTO CORRESPONDING FIELDS OF TABLE gt_list
+    FROM spfli AS sp
+   INNER JOIN sflight AS sf
+      ON sp~carrid = sf~carrid AND sp~connid = sf~connid
+   WHERE sp~carrid IN so_car
+     AND sf~fldate IN so_fld.
+
+* 점유율 계산 및 신호등 설정.
+  LOOP AT gt_list INTO gs_list.
+    IF gs_list-seatsmax > 0.
+      gs_list-occupancy = ( gs_list-seatsocc / gs_list-seatsmax ) * 100.
+    ENDIF.
+
+    " 신호등 로직.
+    IF gs_list-occupancy >= 97.
+      gs_list-light = '3'. " 매진임박.
+    ELSEIF gs_list-occupancy >= 94.
+      gs_list-light = '2'. " 정상.
+    ELSE.
+      gs_list-light = '1'. " 공석 많음.
+    ENDIF.
+
+    MODIFY gt_list FROM gs_list.
+  ENDLOOP.
+
+  TRY.
+      CALL METHOD cl_salv_table=>factory
+        IMPORTING
+          r_salv_table = go_alv_grid
+        CHANGING
+          t_table      = gt_list.
+    CATCH cx_salv_msg.
+  ENDTRY.
+
+*  go_alv_grid->display( ).
+
+  CALL SCREEN 100.

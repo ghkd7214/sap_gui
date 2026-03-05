@@ -1,0 +1,13 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP2_G07_POU_01_REPORT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap2_g07_pou_01_report.
+
+INCLUDE zabap2_g07_pou_01_reporttop.
+INCLUDE zabap2_g07_pou_01_reportc01.
+INCLUDE zabap2_g07_pou_01_reportf01.
+INCLUDE zabap2_g07_pou_01_reportpbo.
+INCLUDE zabap2_g07_pou_01_reportpai.
+INCLUDE zabap2_g07_pou_01_reporte01.

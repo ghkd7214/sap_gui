@@ -1,0 +1,182 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZABAP2_G07_POU_02F01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form get_domain
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_domain .
+  " Custtype text 얻기 (get_domain 사용)
+  DATA : ls_dom TYPE dd07v,
+         lt_dom LIKE TABLE OF ls_dom.
+
+  CALL FUNCTION 'GET_DOMAIN_VALUES'
+    EXPORTING
+      domname         = 'S_CANCEL'
+*     TEXT            = 'X'
+*     FILL_DD07L_TAB  = ' '
+    TABLES
+      values_tab      = lt_dom
+*     VALUES_DD07L    =
+    EXCEPTIONS
+      no_values_found = 1
+      OTHERS          = 2.
+  IF sy-subrc <> 0.
+    " 도메인 취득 중 오류가 발생했습니다.
+    MESSAGE e038(zbc400_g21).
+  ENDIF.
+
+  CLEAR gt_domain.
+
+  LOOP AT lt_dom INTO ls_dom.
+    gs_domain-domname = 'S_CANCEL'.
+    gs_domain-domkey = ls_dom-domvalue_l.
+    gs_domain-text = ls_dom-ddtext.
+
+    APPEND gs_domain TO gt_domain.
+
+    CLEAR : gs_domain, ls_dom.
+  ENDLOOP.
+
+  READ TABLE gt_domain WITH KEY domname = 'S_CANCEL' domkey = zspou03_bookinfo_21-cancelled INTO gs_domain.
+  IF sy-subrc = 0.
+    zspou03_bookinfo_21-cancelled_t = gs_domain-text.
+  ENDIF.
+
+  CLEAR : ls_dom, lt_dom, gs_domain, gt_domain.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_102
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_LANGU
+*&---------------------------------------------------------------------*
+FORM get_data_102 USING VALUE(pv_langu) TYPE sy-langu.
+  CLEAR : btn_1, btn_2, zspou03_flight_connec_21.
+
+  CLEAR: btn_1, btn_2, zspou03_flight_connec_21.
+
+  SELECT SINGLE
+         sp~fltime, sp~distance, sp~distid, sp~fltype,
+         sp~countryfr, sp~cityfrom, sp~airpfrom, sp~deptime,
+         sp~countryto, sp~cityto, sp~airpto,sp~arrtime,
+         tf~landx  AS countryname_f,
+         saf~name  AS airpname_f,
+         tt~landx  AS countryname_t,
+         sat~name  AS airpname_t
+    FROM spfli AS sp LEFT OUTER JOIN t005t AS tf ON tf~land1 = sp~countryfr
+                                                AND tf~spras = @pv_langu
+                     LEFT OUTER JOIN t005t AS tt ON tt~land1 = sp~countryto
+                                                AND tt~spras = @pv_langu
+                     LEFT OUTER JOIN sairport AS saf ON saf~id = sp~airpfrom
+                     LEFT OUTER JOIN sairport AS sat ON sat~id = sp~airpto
+    INTO CORRESPONDING FIELDS OF @zspou03_flight_connec_21
+    WHERE sp~carrid = @sbook-carrid
+      AND sp~connid = @sbook-connid.
+
+  CASE zspou03_flight_connec_21-fltype.
+    WHEN ''.
+      btn_1 = 'X'.
+    WHEN 'X'.
+      btn_2 = 'X'.
+  ENDCASE.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_104
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_LANGU
+*&---------------------------------------------------------------------*
+FORM get_data_104 USING VALUE(pv_langu) TYPE sy-langu.
+  SELECT SINGLE
+         id name form street postbox postcode city
+         country region telephone discount langu email webuser
+         t5~landx AS countryname t2~sptxt AS languname
+    FROM scustom AS sc INNER JOIN t005t AS t5 ON sc~country = t5~land1
+                       INNER JOIN t002t AS t2 ON sc~langu = t2~sprsl
+    INTO CORRESPONDING FIELDS OF zspou03_customer_info_21
+    WHERE id = zspou03_bookinfo_21-customid
+      AND t5~spras = pv_langu
+      AND t2~spras = pv_langu.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_110
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> GV_LANGU
+*&---------------------------------------------------------------------*
+FORM get_data_110 USING VALUE(pv_langu) TYPE sy-langu.
+  SELECT SINGLE
+         m~menunumber starter maincourse dessert
+         s~text AS aname c~text AS mname d~text AS dname
+     FROM smenu AS m
+    LEFT OUTER JOIN smealt AS s
+      ON  s~carrid     = m~carrid
+      AND s~mealnumber = m~starter
+      AND s~sprache    = pv_langu
+    LEFT OUTER JOIN smealt AS c
+      ON  c~carrid     = m~carrid
+      AND c~mealnumber = m~maincourse
+      AND c~sprache    = pv_langu
+    LEFT OUTER JOIN smealt AS d
+      ON  d~carrid     = m~carrid
+      AND d~mealnumber = m~dessert
+      AND d~sprache    = pv_langu
+    INTO CORRESPONDING FIELDS OF zspou03_menu_info_21
+    WHERE m~menunumber = zspou03_bookinfo_21-menunumber
+      AND m~carrid = sbook-carrid.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_data_200 .
+  SELECT SINGLE
+         carrid connid fldate bookid svydate
+         evalue1 evalue2 evalue3 evalue4 evalue5 comments
+    FROM ztsurvey_21
+    INTO CORRESPONDING FIELDS OF zspou03_survey_info_21
+    WHERE carrid = sbook-carrid
+      AND connid = sbook-connid
+      AND fldate = sbook-fldate
+      AND bookid = sbook-bookid.
+
+  zspou03_survey_info_21-customid = zspou03_bookinfo_21-customid.
+  zspou03_survey_info_21-custtname = zspou03_bookinfo_21-custname.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form update_db
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM update_db USING VALUE(ps_update) TYPE zspou03_survey_info_21.
+  DATA : ls_update TYPE ztsurvey_21.
+
+  MOVE-CORRESPONDING ps_update TO ls_update.
+
+  MODIFY ztsurvey_21 FROM ls_update.
+
+  IF sy-subrc = 0.
+    " 설문조사를 완료하였습니다.
+    MESSAGE s039(zbc400_g21).
+  ELSE.
+    " 설문조사 저장 실패
+    MESSAGE i040(zbc400_g21).
+  ENDIF.
+ENDFORM.

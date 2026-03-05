@@ -1,0 +1,28 @@
+*&---------------------------------------------------------------------*
+*& Include zquiz_21_g07_top
+*&---------------------------------------------------------------------*
+
+DATA : ok_code TYPE sy-ucomm.
+
+TYPES: BEGIN OF ty_list1,
+         pernr   TYPE ztcerti_g07-pernr,
+         nametxt TYPE zt1001_07-ename,
+         reqdt   TYPE ztcerti_g07-reqdt,
+         reqno   TYPE ztcerti_g07-reqno,
+         certyp  TYPE ztcerti_g07-certyp,
+         reqqty  TYPE ztcerti_g07-reqqty,
+         recvmth TYPE ztcerti_g07-recvmth,
+         ceruse  TYPE ztcerti_g07-ceruse,
+         status  TYPE ztcerti_g07-status,
+       END OF ty_list1.
+
+DATA: go_cont TYPE REF TO cl_gui_custom_container,
+      go_alv  TYPE REF TO cl_gui_alv_grid.
+
+DATA: gt_list TYPE TABLE OF ty_list1,
+      gs_list TYPE ty_list1.
+
+DATA: gs_layout TYPE lvc_s_layo.
+
+DATA: gt_fcat1 TYPE lvc_t_fcat,
+      gs_fcat  TYPE lvc_s_fcat.

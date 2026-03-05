@@ -1,0 +1,267 @@
+*----------------------------------------------------------------------*
+*   INCLUDE LSEOKFLG                                                   *
+*----------------------------------------------------------------------*
+
+types:
+  begin of compo_change_log,
+    cmpkey type seocmpkey,
+    cmptype type seocmptype,
+    alias type seocompodf-alias,
+    action type seochatype,
+    refcmpkey type seocmpkey,
+  end of compo_change_log,
+  begin of mtd_change_log,
+    mtdkey type seocmpkey,
+    action type log_action,
+    refcpdkey type seocpdkey,
+  end of mtd_change_log,
+  begin of cls_change_log,
+    clskey type seoclskey,
+    action type log_action,
+    refclskey type seoclskey,
+  end of cls_change_log,
+  begin of inh_change_log,
+    inhkey type seorelkey,
+    redefinitions type seor_redefinitions_r,
+    action type log_action,
+    newinhkey type seorelkey,
+  end of inh_change_log.
+
+constants:
+  log_action_renamed type log_action value 'R',
+  log_action_changed type log_action value 'E',
+  log_action_copied type log_action value  'C',
+  log_action_deleted type log_action value 'D'.
+
+* log tables for post processing when clif is being saved
+data:
+  method_change_log type standard table of mtd_change_log
+    with key mtdkey,
+*  component_change_log type standard table of compo_change_log,
+  component_change_log type SEO_CMP_CHANGE_LOG,
+  class_change_log type hashed table of cls_change_log
+    with unique key clskey,
+  inheritance_change_log type hashed table of inh_change_log
+    with unique key inhkey,
+  _mcl type mtd_change_log,
+  _clmtdkey type seocmpkey,
+  _clcpdkey type seocpdkey,
+  _clmtdname type seocpdname.
+
+field-symbols:
+  <_mcl> type mtd_change_log.
+
+define get_mtd_change_log_entry.
+*>&1 mtdkey to be saved type seocmpkey
+*>&2 action
+*<&3 mcl entry type mtd_change_log
+  clear &3.
+  loop at method_change_log
+    assigning <_mcl>
+    where mtdkey = &1
+      and action = &2.
+    &3 = <_mcl>.
+    exit.
+  endloop.
+end-of-definition.
+
+define method_renamed.
+*>&1 deleted mtdkey type seocmpkey
+*>&2 new mtdname type seocmpname
+  clear:
+    _mcl,
+    _clmtdkey,
+    _clcpdkey.
+  if not &2 is initial.
+* look for existing copy entry for mtdkey from another one
+    loop at method_change_log
+      assigning <_mcl>
+      where mtdkey = &1
+        and action = log_action_copied.
+      <_mcl>-mtdkey-cmpname = &2.
+      _clmtdname = <_mcl>-refcpdkey-cpdname.
+      exit.
+    endloop.
+    if sy-subrc = 0.
+* delete duplicate copy entry new_mtdkey from mtdkey
+      _clmtdkey = _clcpdkey = &1.
+      _clmtdkey-cmpname = &2.
+      loop at method_change_log
+        assigning <_mcl>
+        where mtdkey = _clmtdkey
+          and action = log_action_copied
+        and refcpdkey = _clcpdkey.
+        delete method_change_log.
+        exit.
+      endloop.
+* adapt existing rename entry for the other one
+      if _clmtdname na '~'.
+        _clmtdkey-cmpname = _clmtdname.
+        loop at method_change_log
+          assigning <_mcl>
+          where mtdkey = _clmtdkey
+            and action = log_action_renamed.
+          <_mcl>-refcpdkey-cpdname = &2.
+        endloop.
+      endif.
+    else.
+* otherwise add rename entry
+      _mcl-mtdkey = &1.
+      _mcl-action = log_action_renamed.
+      _mcl-refcpdkey-clsname = &1-clsname.
+      _mcl-refcpdkey-cpdname = &2.
+      append _mcl to method_change_log.
+    endif.
+  endif.
+end-of-definition.
+
+define method_copied.
+*>&1 new mtdkey type seocmpkey
+*>&2 original mtdkey type seocpdkey
+  clear:
+    _mcl,
+    _clmtdkey.
+* specific processing for clipboard methods
+  if &2-clsname(3) = '%%_'.
+    _clmtdkey = &2.
+    read table method_change_log
+      into _mcl
+      with table key mtdkey = _clmtdkey.
+*    delete table method_change_log
+*      with table key mtdkey = _clmtdkey.
+    _mcl-mtdkey = &1.
+    append _mcl to method_change_log.
+* standard processing
+  else.
+    _mcl-mtdkey = &1.
+    _mcl-action = log_action_copied.
+    _mcl-refcpdkey = &2.
+    append _mcl to method_change_log.
+  endif.
+end-of-definition.
+
+define clear_mtd_change_log.
+*>&1 cifkey to be cleared
+  delete method_change_log
+    where:
+      mtdkey-clsname = &1-clsname,
+      mtdkey-clsname(3) = '%%_'.
+end-of-definition.
+
+form create_compo_change_log_entry
+     using: value(cmpkey) type seocmpkey
+            value(cmptype) type seocmptype
+            value(alias) type seocompodf-alias
+            value(change) type seochatype
+            value(new_cmpkey) type seocmpkey.
+
+  data: table_lines type i,
+        cmpkey_ type seocmpkey,
+        compo_change_log_entry type compo_change_log.
+
+
+  case change.
+    when 'COP'.
+
+      if new_cmpkey-clsname eq '%%_CLIPBOARD_CLASS'.
+      else.
+        compo_change_log_entry-cmpkey-clsname = new_cmpkey-clsname.
+        compo_change_log_entry-cmpkey-cmpname = new_cmpkey-cmpname.
+        compo_change_log_entry-action = 'COP'.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-refcmpkey = cmpkey.
+        if cmpkey-clsname eq '%%_CLIPBOARD_CLASS'.
+          compo_change_log_entry-refcmpkey-clsname =
+          compo_change_log_entry-cmpkey-clsname.
+        endif.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+      endif.
+
+    when 'DEL'.
+
+      describe table component_change_log lines table_lines.
+      read table component_change_log
+           index table_lines
+            into compo_change_log_entry.
+
+      if compo_change_log_entry-refcmpkey = cmpkey and
+          compo_change_log_entry-action = 'COP'.
+        delete component_change_log index table_lines.
+        compo_change_log_entry-action = 'REN'.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+      else.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'DEL'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-cmptype = cmptype.
+        compo_change_log_entry-alias = alias.
+        append compo_change_log_entry to component_change_log.
+      endif.
+
+    when 'CHT'.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'CHT'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-cmptype = cmptype.
+        compo_change_log_entry-alias = alias.
+        append compo_change_log_entry to component_change_log.
+
+    when 'SIG'.
+        if cmpkey-cmpname ne '%%_CLIPBOARD_METHOD' and
+           cmpkey-cmpname  ne '%%_CLIPBOARD_EVENT'.
+
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'SIG'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-cmptype = cmptype.
+
+        read table component_change_log from compo_change_log_entry
+                                        into compo_change_log_entry.
+
+        if sy-subrc <> 0.
+         compo_change_log_entry-alias = alias.
+         append compo_change_log_entry to component_change_log.
+        endif.
+        endif.
+
+    when 'CHD'.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'CHD'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+
+    when 'CRE'.
+      if cmpkey-cmpname ne '%%_CLIPBOARD_METHOD' and
+         cmpkey-cmpname  ne '%%_CLIPBOARD_EVENT'.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'CRE'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+      endif.
+
+    when 'IMP'.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = 'IMP'.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+
+    when others.
+        compo_change_log_entry-cmpkey = cmpkey.
+        compo_change_log_entry-action = change.
+        clear compo_change_log_entry-refcmpkey.
+        compo_change_log_entry-alias = alias.
+        compo_change_log_entry-cmptype = cmptype.
+        append compo_change_log_entry to component_change_log.
+
+  endcase.
+
+endform.

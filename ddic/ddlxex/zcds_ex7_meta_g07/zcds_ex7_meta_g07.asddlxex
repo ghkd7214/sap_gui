@@ -1,0 +1,20 @@
+@Metadata.layer: #CUSTOMER
+annotate view ZCDS_EX7_G07
+  with 
+{
+  @UI.lineItem: [{ position: 10 }]
+  SalesOrderID;
+  @UI.lineItem: [{ position: 20 }]
+  CustomerID;
+  @UI.lineItem: [{ position: 30 }]
+  CustomerName;
+  @UI.lineItem: [{ position: 40 ,importance: #LOW}]
+  GrossAmount;
+  @UI.lineItem: [{ position: 50 }]
+  NetAmount;
+  @UI.lineItem: [{ position: 60, importance: #LOW }]
+  TaxAmount;
+  @UI.hidden: true
+  Currency;
+  
+}

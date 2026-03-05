@@ -1,0 +1,462 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_50_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap_50_g07.
+* Local Interface.
+INTERFACE lif_partner.
+  METHODS:
+    display_partner.
+ENDINTERFACE.
+
+* Local Class.
+CLASS lcl_vehicle DEFINITION.
+  PUBLIC SECTION.
+*   Instance method.
+    METHODS:
+      constructor IMPORTING  iv_make  TYPE string
+                             iv_model TYPE string
+                  EXCEPTIONS no_data,
+
+      set_attributes IMPORTING iv_make  TYPE string
+                               iv_model TYPE string,
+      display_attributes.
+
+*   Static method.
+    CLASS-METHODS:
+      display_n_o_vehicles,
+      get_n_o_vehicles RETURNING VALUE(rv_count) TYPE i,
+      class_constructor.
+
+  PROTECTED SECTION.
+    CONSTANTS gc_pos TYPE i VALUE 30.
+
+  PRIVATE SECTION.
+*   Instance attribute.
+    DATA: mv_make  TYPE string,
+          mv_model TYPE string.
+
+*   Static attribute.
+    CLASS-DATA: gv_n_o_vehicles TYPE i,
+                gt_vehicles     TYPE TABLE OF svehicle.
+*
+*    CONSTANTS GC_POS TYPE I VALUE 30.
+
+ENDCLASS.
+
+CLASS lcl_vehicle IMPLEMENTATION.
+  METHOD class_constructor.
+    SELECT *
+      INTO TABLE gt_vehicles
+      FROM svehicle.
+  ENDMETHOD.
+
+  METHOD constructor.
+*    SELECT COUNT( * )
+*      FROM SVEHICLE
+*      WHERE MAKE = IV_MAKE
+*        AND MODEL = IV_MODEL.
+    READ TABLE gt_vehicles
+      WITH KEY make = iv_make
+               model = iv_model TRANSPORTING NO FIELDS.
+    IF sy-subrc <> 0.
+      RAISE no_data.
+    ELSE.
+      mv_make = iv_make.
+      mv_model = iv_model.
+      ADD 1 TO gv_n_o_vehicles.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_n_o_vehicles.
+    rv_count = gv_n_o_vehicles.
+  ENDMETHOD.
+
+  METHOD set_attributes.
+    mv_make = iv_make.
+    mv_model = iv_model.
+
+    ADD 1 TO gv_n_o_vehicles.
+  ENDMETHOD.
+
+  METHOD display_attributes.
+    WRITE:/ icon_car AS ICON,
+          / 'Car Make  : ', AT gc_pos mv_make,
+          / 'Car Model : ', AT gc_pos mv_model.
+  ENDMETHOD.
+
+  METHOD display_n_o_vehicles.
+    WRITE:/ 'Number of Create Vehicles : ', gv_n_o_vehicles LEFT-JUSTIFIED.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_truck DEFINITION INHERITING FROM lcl_vehicle.
+  PUBLIC SECTION.
+    METHODS:
+      constructor IMPORTING  iv_make  TYPE string
+                             iv_model TYPE string
+                             iv_cargo TYPE s_plan_car
+                  EXCEPTIONS no_data,
+
+      display_attributes REDEFINITION.
+  PRIVATE SECTION.
+    DATA: mv_cargo TYPE s_plan_car.
+ENDCLASS.
+
+CLASS lcl_truck IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor(
+      EXPORTING
+        iv_make  = iv_make
+        iv_model = iv_model
+      EXCEPTIONS
+        no_data  = 1
+        OTHERS   = 2
+    ).
+    IF sy-subrc <> 0.
+      RAISE no_data.
+    ELSE.
+      mv_cargo = iv_cargo.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD display_attributes.
+    super->display_attributes( ).
+    WRITE:/ 'Maximum Cargo : ', AT gc_pos mv_cargo LEFT-JUSTIFIED.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_bus DEFINITION INHERITING FROM lcl_vehicle.
+  PUBLIC SECTION.
+    METHODS:
+      constructor IMPORTING  iv_make  TYPE string
+                             iv_model TYPE string
+                             iv_seats TYPE s_seatsmax
+                  EXCEPTIONS no_data,
+
+      display_attributes REDEFINITION,
+
+      get_seats RETURNING VALUE(rv_seats) TYPE s_seatsmax.
+  PRIVATE SECTION.
+    DATA: mv_seats TYPE s_seatsmax.
+ENDCLASS.
+
+CLASS lcl_bus IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor(
+      EXPORTING
+        iv_make  = iv_make
+        iv_model = iv_model
+      EXCEPTIONS
+        no_data  = 1
+        OTHERS   = 2
+    ).
+    IF sy-subrc <> 0.
+      RAISE no_data.
+    ELSE.
+      mv_seats = iv_seats.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD display_attributes.
+    super->display_attributes( ).
+
+    WRITE:/ 'Max Seats : ', AT gc_pos mv_seats LEFT-JUSTIFIED.
+  ENDMETHOD.
+
+  METHOD get_seats.
+    rv_seats = mv_seats.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_rental DEFINITION.
+  PUBLIC SECTION.
+    INTERFACES: lif_partner.
+
+    METHODS:
+      constructor IMPORTING iv_name TYPE string,
+      dispaly_attributes,
+      add_vehicle IMPORTING io_vehicle TYPE REF TO lcl_vehicle,
+      get_maxseats RETURNING VALUE(rv_seats) TYPE s_seatsfre.
+  PRIVATE SECTION.
+    DATA: mv_name     TYPE string,
+          mt_vehicles TYPE TABLE OF REF TO lcl_vehicle.
+
+ENDCLASS.
+
+CLASS lcl_rental IMPLEMENTATION.
+  METHOD constructor.
+    mv_name = iv_name.
+  ENDMETHOD.
+
+  METHOD add_vehicle.
+    APPEND io_vehicle TO mt_vehicles.
+  ENDMETHOD.
+
+  METHOD dispaly_attributes.
+    DATA: lo_vehicle TYPE REF TO lcl_vehicle.
+
+    WRITE:/ 'Rental Company : ', mv_name.
+    ULINE.
+    ULINE.
+
+    LOOP AT mt_vehicles INTO lo_vehicle.
+
+      lo_vehicle->display_attributes( ).
+      ULINE.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD get_maxseats.
+    DATA: lo_vehicel TYPE REF TO lcl_vehicle,
+          lo_bus     TYPE REF TO lcl_bus.
+
+    LOOP AT mt_vehicles INTO lo_vehicel.
+      TRY.
+          lo_bus ?= lo_vehicel.
+          rv_seats = rv_seats + lo_bus->get_seats( ).
+*        CATCH CX_SY_MOVE_CAST_ERROR.
+        CATCH cx_root.
+      ENDTRY.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD lif_partner~display_partner.
+    me->dispaly_attributes( ).
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_travel_agency DEFINITION.
+  PUBLIC SECTION.
+    METHODS:
+      constructor IMPORTING iv_name TYPE string,
+
+      add_partner IMPORTING io_partner TYPE REF TO lif_partner,
+
+      display_agency_partner.
+
+  PRIVATE SECTION.
+    DATA: mv_name    TYPE string,
+          mt_partner TYPE TABLE OF REF TO lif_partner.
+
+ENDCLASS.
+
+CLASS lcl_travel_agency IMPLEMENTATION.
+  METHOD constructor.
+    mv_name = iv_name.
+  ENDMETHOD.
+
+  METHOD add_partner.
+    APPEND io_partner TO mt_partner.
+  ENDMETHOD.
+
+  METHOD display_agency_partner.
+    DATA: lo_partner TYPE REF TO lif_partner.
+
+    WRITE:/ 'Travel Agency Name : ', mv_name.
+    ULINE.
+
+    LOOP AT mt_partner INTO lo_partner.
+      lo_partner->display_partner( ).
+      ULINE.
+    ENDLOOP.
+  ENDMETHOD.
+ENDCLASS.
+
+DATA: go_vehicle TYPE REF TO lcl_vehicle,
+      go_truck   TYPE REF TO lcl_truck,
+      go_bus     TYPE REF TO lcl_bus,
+      go_rental  TYPE REF TO lcl_rental,
+      go_agency  TYPE REF TO lcl_travel_agency.
+
+DATA: gt_vehicles  TYPE TABLE OF REF TO lcl_vehicle,
+      gv_count     TYPE i,
+      gv_tot_seats TYPE s_seatsmax.
+
+START-OF-SELECTION.
+* Static method 호출.
+  CALL METHOD lcl_vehicle=>display_n_o_vehicles.
+
+  CREATE OBJECT go_agency
+    EXPORTING
+      iv_name = 'Code Academy Travel'.
+
+  CREATE OBJECT go_rental
+    EXPORTING
+      iv_name = 'Code Rental Co & Ltd'.
+
+  go_agency->add_partner( io_partner = go_rental ).
+
+* Object 생성.
+*  CREATE OBJECT GO_VEHICLE.
+*  CREATE OBJECT GO_VEHICLE
+*    EXPORTING
+*      IV_MAKE  = 'BMW'
+*      IV_MODEL = '318I'
+*    EXCEPTIONS
+*      NO_DATA  = 1
+*      OTHERS   = 2.
+*  IF SY-SUBRC = 0.
+**  생성된 object를 Internal table에 할당.
+*    APPEND GO_VEHICLE TO GT_VEHICLES.
+*  ENDIF.
+** Instance method 호출.
+*  CALL METHOD GO_VEHICLE->SET_ATTRIBUTES
+*    EXPORTING
+*      IV_MAKE  = 'BMW'
+*      IV_MODEL = '320I'.
+
+* Object 생성.
+*  CREATE OBJECT GO_VEHICLE
+*    EXPORTING
+*      IV_MAKE  = 'AUDI'
+*      IV_MODEL = 'A3'
+*    EXCEPTIONS
+*      NO_DATA  = 1
+*      OTHERS   = 2.
+*  IF SY-SUBRC = 0.
+**  생성된 object를 Internal table에 할당.
+*    APPEND GO_VEHICLE TO GT_VEHICLES.
+*  ENDIF.
+
+** Instance method 호출.
+*  GO_VEHICLE->SET_ATTRIBUTES(
+*    IV_MAKE  = 'AUDI'
+*    IV_MODEL = 'A3'
+*  ).
+
+** Object 생성.
+*  CREATE OBJECT GO_VEHICLE
+*    EXPORTING
+*      IV_MAKE  = 'MAN'
+*      IV_MODEL = 'TGX'
+*    EXCEPTIONS
+*      NO_DATA  = 1
+*      OTHERS   = 2.
+*  IF SY-SUBRC = 0.
+**  생성된 object를 Internal table에 할당.
+*    APPEND GO_VEHICLE TO GT_VEHICLES.
+*  ENDIF.
+
+** INSTANCE METHOD 호출.
+*  GO_VEHICLE->SET_ATTRIBUTES(
+*    IV_MAKE  = 'MAN'
+*    IV_MODEL = 'TGX'
+*  ).
+
+  CREATE OBJECT go_truck
+    EXPORTING
+      iv_make  = 'MAN'
+      iv_model = 'TGX'
+      iv_cargo = 100
+    EXCEPTIONS
+      no_data  = 1
+      OTHERS   = 2.
+  IF sy-subrc = 0.
+*    APPEND GO_TRUCK TO GT_VEHICLES.
+    CALL METHOD go_rental->add_vehicle
+      EXPORTING
+        io_vehicle = go_truck.
+  ENDIF.
+
+*  GO_TRUCK->DISPLAY_ATTRIBUTES( ).
+*  ULINE.
+
+  CREATE OBJECT go_bus
+    EXPORTING
+      iv_make  = 'DAIMLER'
+      iv_model = 'ACTROS'
+      iv_seats = 55
+    EXCEPTIONS
+      no_data  = 1
+      OTHERS   = 2.
+  IF sy-subrc = 0.
+*    APPEND GO_BUS TO GT_VEHICLES.
+    go_rental->add_vehicle( io_vehicle = go_bus ).
+  ENDIF.
+
+*  GO_BUS->DISPLAY_ATTRIBUTES( ).
+*  ULINE.
+
+  CREATE OBJECT go_truck
+    EXPORTING
+      iv_make  = 'SETRA'
+      iv_model = '416'
+      iv_cargo = 55
+    EXCEPTIONS
+      no_data  = 1
+      OTHERS   = 2.
+  IF sy-subrc = 0.
+*    APPEND GO_TRUCK TO GT_VEHICLES.
+    go_rental->add_vehicle( io_vehicle = go_truck ).
+  ENDIF.
+
+  CREATE OBJECT go_bus
+    EXPORTING
+      iv_make  = 'MERCEDES'
+      iv_model = 'SPRINTER'
+      iv_seats = 25
+    EXCEPTIONS
+      no_data  = 1
+      OTHERS   = 2.
+  IF sy-subrc = 0.
+*    APPEND GO_BUS TO GT_VEHICLES.
+    go_rental->add_vehicle( io_vehicle = go_bus ).
+  ENDIF.
+
+*  GO_TRUCK->DISPLAY_ATTRIBUTES( ).
+*  ULINE.
+
+*  LOOP AT GT_VEHICLES INTO GO_VEHICLE.
+**   Instance method 호출.
+*    CALL METHOD GO_VEHICLE->DISPLAY_ATTRIBUTES.
+*    ULINE.
+*  ENDLOOP.
+** Static method 호출.
+*  LCL_VEHICLE=>DISPLAY_N_O_VEHICLES( ).
+
+*  Functional method 호출.
+*  LCL_VEHICLE=>GET_N_O_VEHICLES(
+*    RECEIVING
+*      RV_COUNT = GV_COUNT
+*  ).
+
+
+*  go_rental->dispaly_attributes( ).
+
+go_agency->display_agency_partner( ).
+
+* 렌탈 Bus에 대한 전체 좌석수.
+  gv_tot_seats = go_rental->get_maxseats( ).
+  ULINE.
+  WRITE:/ 'Bus total seats : ', gv_tot_seats.
+  ULINE.
+
+*  Functional method 호출.
+  gv_count = lcl_vehicle=>get_n_o_vehicles( ).
+  WRITE:/ 'Number of careate vehicles : ', gv_count.
+
+*  IF LCL_VEHICLE=>GET_N_O_VEHICLES( ) = 3.
+*    WRITE:/ 'AAAAAAAAAAAAAAAA'.
+*  ENDIF.
+
+*  CASE LCL_VEHICLE=>GET_N_O_VEHICLES( ).
+*    WHEN 1.
+*    WHEN 2.
+*    WHEN 3.
+*      WRITE:/ 'XXXXXXXXXXXXXX'.
+*  ENDCASE.
+
+*  CASE 3.
+*    WHEN LCL_VEHICLE=>GET_N_O_VEHICLES( ).
+*      WRITE:/ 'XXXXXXXXXXXXXX'.
+*  ENDCASE.
+
+*  DO LCL_VEHICLE=>GET_N_O_VEHICLES( ) TIMES.
+*    WRITE:/ SY-INDEX.
+*  ENDDO.
+
+*  GV_COUNT = LCL_VEHICLE=>GET_N_O_VEHICLES( ) *
+*             LCL_VEHICLE=>GET_N_O_VEHICLES( ).
+*  WRITE:/ GV_COUNT.

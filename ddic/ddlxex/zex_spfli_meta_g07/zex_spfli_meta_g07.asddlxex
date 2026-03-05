@@ -1,0 +1,97 @@
+@Metadata.layer: #CUSTOMER
+annotate view ZEX_SPFLI_G07
+    with 
+{
+     @UI.facet: [
+        { id: 'GeneralInfo', type: #COLLECTION, label: 'General Info', position: 10 },
+            { parentId: 'GeneralInfo', id: 'Departure', type: #FIELDGROUP_REFERENCE, 
+              label: 'Departure Info', targetQualifier: 'DEP', position: 10 },
+            { parentId: 'GeneralInfo', id: 'Arrival',   type: #FIELDGROUP_REFERENCE, 
+              label: 'Arrival Info',   targetQualifier: 'ARR', position: 20 },
+            { parentId: 'GeneralInfo', id: 'Distance',  type: #FIELDGROUP_REFERENCE, 
+              label: 'Distance Info',  targetQualifier: 'DIS', position: 30 },
+
+        { id: 'FlightList', type: #COLLECTION, label: 'Flight List', position: 20 },
+            { parentId: 'FlightList', type: #LINEITEM_REFERENCE, 
+              label: 'FlightList', targetElement: '_ObjSflight'},
+
+        { id: 'Chart1', type: #CHART_REFERENCE, targetElement: '_Chart1', label: 'Amount By Year & Month', position: 30 },
+
+        { id: 'Chart2', type: #CHART_REFERENCE, targetElement: '_Chart2', label: 'Numbsers & Amount by Class', position: 40 }
+    ]
+
+//----------------------------------------------------------------------------------------
+
+    @UI: { lineItem: [{ position: 10, label: 'Airline' }] }
+    Carrid;
+    @UI: { lineItem: [{ position: 20, label: '' }] }
+    Connid;
+    @UI: { lineItem: [{ position: 30 }],
+         fieldGroup: [{ position: 10, qualifier: 'DEP'}] }
+    Countryfr;
+
+    @UI.hidden: true
+    CountryfrName;
+
+    @UI: { lineItem: [{ position: 40 }], 
+         fieldGroup: [{ position: 20, qualifier: 'DEP'}] }
+    @Search.defaultSearchElement: true
+    @Search.fuzzinessThreshold: 0.8
+    Cityfrom;
+
+    @UI: { lineItem: [{ position: 50, label: 'Departure airport' }],
+         fieldGroup: [{ position: 30, qualifier: 'DEP'}] }
+    AirpfrName;
+
+    @UI.hidden: true
+    Airpfrom;
+
+    @UI: { lineItem: [{ position: 60 }],
+         fieldGroup: [{ position: 10, qualifier: 'ARR'}] }
+    Countryto;
+
+    @UI.hidden: true
+    CountrytoName;
+
+    @UI: { lineItem: [{ position: 70 }],
+         fieldGroup: [{ position: 20, qualifier: 'ARR'}] }
+    @Search.defaultSearchElement: true
+    @Search.fuzzinessThreshold: 0.8
+    Cityto;
+
+    @UI: { lineItem: [{ position: 80, label: 'Destination airport' }],
+         fieldGroup: [{ position: 30, qualifier: 'ARR'}] }
+    AirptoName;
+
+    @UI.hidden: true
+    Airpto;
+
+    @UI.fieldGroup: [{ position: 40, qualifier: 'DEP'}]
+    Deptime;
+    
+    @UI.fieldGroup: [{ position: 40, qualifier: 'ARR'}]
+    Arrtime;
+
+    @UI.fieldGroup: [{ position: 10, qualifier: 'DIS'}]
+    Distance;
+    @UI.fieldGroup: [{ position: 20, qualifier: 'DIS' }]
+    Fltype;
+    @UI.fieldGroup: [{ position: 30, qualifier: 'DIS' }]
+    Period;
+    @UI.fieldGroup: [{ position: 40, qualifier: 'DIS', label: 'Domestic/International'}]
+    IsPeriod;
+
+    @UI.hidden: true
+    Carrname;
+
+    @UI.hidden: true
+    _Countryfr;
+    @UI.hidden: true
+    _Countryto;
+    @UI.hidden: true
+    _Airpfr;
+    @UI.hidden: true
+    _Airpto;
+    @UI.hidden: true
+    _Airline;
+}

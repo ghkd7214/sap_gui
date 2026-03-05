@@ -1,0 +1,22 @@
+"! <p class="shorttext synchronized" lang="EN">XCO CP ABAP SQL: API</p>
+"!
+"! API for package S_XCO_ABAP_SQL.
+CLASS xco_cp_abap_sql DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      constraint TYPE REF TO cl_xco_asql_constraint_factory READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS XCO_CP_ABAP_SQL IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    " TODO Think about this.
+    constraint = xco_abap_sql=>constraint.
+  ENDMETHOD.
+ENDCLASS.

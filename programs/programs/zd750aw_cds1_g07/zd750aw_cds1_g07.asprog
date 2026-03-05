@@ -1,0 +1,106 @@
+*&---------------------------------------------------------------------*
+*& Report D750AW_CDS-T1
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zd750aw_cds1_g07.
+
+TYPES: BEGIN OF ty_s_booking,
+         carrid          TYPE sbook-carrid,
+         connid          TYPE sbook-connid,
+         fldate          TYPE sbook-fldate,
+         bookid          TYPE sbook-bookid,
+         customid        TYPE sbook-customid,
+         form            TYPE scustom-form,
+         name            TYPE scustom-name,
+         order_date      TYPE sbook-order_date,
+         loccuram        TYPE sbook-loccuram,
+         loccurkey       TYPE sbook-loccurkey,
+         full_name       TYPE string,
+         converted_price TYPE sbook-loccuram,
+         target_currency TYPE sbook-loccurkey,
+       END OF ty_s_booking.
+
+DATA gt_bookings TYPE TABLE OF ty_s_booking.
+DATA gs_booking TYPE ty_s_booking.
+
+DATA go_salv TYPE REF TO cl_salv_table.
+
+PARAMETERS: pa_car TYPE sbook-carrid DEFAULT 'LH',
+            pa_cur TYPE s_curr       DEFAULT 'USD'.
+
+* Read all relevant data
+*******************************************************************************
+
+*SELECT FROM sbook AS b INNER JOIN scustom AS c
+*         ON b~customid = c~id
+*FIELDS b~carrid,
+*       b~connid,
+*       b~fldate,
+*       b~bookid,
+*       b~customid,
+*       c~form,
+*       c~name,
+*       b~order_date,
+*       b~loccuram,
+*       b~loccurkey
+*
+* WHERE carrid = @pa_car
+* INTO TABLE @gt_bookings.
+
+SELECT FROM d750aw_cds_s1
+FIELDS carrid,
+       connid,
+       fldate,
+       bookid,
+       customid,
+       form,
+       name,
+       order_date,
+       loccuram,
+       currency as loccurkey
+ WHERE carrid = @pa_car
+ INTO TABLE @gt_bookings.
+
+* Do calculations for additional fields
+*******************************************************************************
+
+LOOP AT gt_bookings INTO gs_booking.
+  gs_booking-full_name = gs_booking-form && ` ` && gs_booking-name.
+
+  CALL FUNCTION 'CONVERT_TO_LOCAL_CURRENCY'
+    EXPORTING
+      date             = gs_booking-order_date
+      foreign_amount   = gs_booking-loccuram
+      foreign_currency = gs_booking-loccurkey
+      local_currency   = pa_cur
+      type_of_rate     = 'M'
+    IMPORTING
+      local_amount     = gs_booking-converted_price
+    EXCEPTIONS
+      no_rate_found    = 1
+      overflow         = 2
+      no_factors_found = 3
+      no_spread_found  = 4
+      derived_2_times  = 5.
+  IF sy-subrc <> 0.
+    CLEAR gs_booking-converted_price.
+  ENDIF.
+
+  gs_booking-target_currency = pa_cur.
+
+  MODIFY gt_bookings FROM gs_booking TRANSPORTING full_name converted_price target_currency.
+ENDLOOP.
+
+
+* Output
+*********************************************************************************************
+
+cl_salv_table=>factory(
+  IMPORTING
+    r_salv_table   =  go_salv   " Basis Class Simple ALV Tables
+  CHANGING
+    t_table        = gt_bookings
+).
+
+go_salv->display( ).

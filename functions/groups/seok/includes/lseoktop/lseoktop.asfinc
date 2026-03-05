@@ -1,0 +1,90 @@
+function-pool seok
+  message-id oo.
+
+include:
+  lseokerr,
+  lseokmac,
+  lseoklog.
+
+type-pools:
+  seos,
+  seor,
+  seoa,
+  seof,
+  seot,
+  seok,
+  seop,
+  tpchk,
+  seoe,
+  seod.
+
+class cl_oo_include_naming definition load.
+class cl_oo_classname_service definition load.
+class cl_oo_class_modifications definition load.
+class cl_oo_interface_modifications definition load.
+
+* buffer tables
+xbuffer class.                                              "#EC NEEDED
+xbuffer interf.                                             "#EC NEEDED
+xbuffer_short attrib.                                       "#EC NEEDED
+xbuffer method.                                             "#EC NEEDED
+xbuffer event.                                              "#EC NEEDED
+xbuffer_short type.                                         "#EC NEEDED
+xbuffer param.                                              "#EC NEEDED
+xbuffer excep.                                              "#EC NEEDED
+buffer compri.                                              "#EC NEEDED
+buffer implem.                                              "#EC NEEDED
+buffer extend.                                              "#EC NEEDED
+taddition redef seorelkey.                                  "#EC NEEDED
+buffer compos.                                              "#EC NEEDED
+buffer assoc.                                               "#EC NEEDED
+tbuffer friends.                                            "#EC NEEDED
+buffer typep.                                               "#EC NEEDED
+buffer cdefer.                                              "#EC NEEDED
+buffer idefer.                                              "#EC NEEDED
+
+* global flag
+data wbinactive type seox_boolean
+  value seox_false.
+
+* Refactoring on/off
+data refactoring type seox_boolean value seox_true.
+data suppress_modification type seox_boolean value seox_false.  " ec
+data note_assistant_mode   type seox_boolean value seox_false.  " ec
+
+* declarations for modification support
+data it_sap_version_of_sections type seo_sap_versions.
+data it_cifkeys_with_extend_flag type seo_clskeys.
+
+types: begin of ty_tool_log ,
+         clskey type seoclskey,
+         limu   type trobjtype,
+         object type ref to cl_clm_tool_log,
+       end of ty_tool_log.
+
+data it_tool_log type standard table of ty_tool_log.
+
+* common declarations for local data
+data:
+  state type buf_state,
+  db type seox_boolean.
+
+data inhkeys_del_w_redef_includes type seor_inheritance_keys.
+
+
+types: begin of impldet_state_type ,
+         clskey type seoclskey,
+         state type buf_state,
+       end of impldet_state_type.
+
+data details_of_implementings type seor_redefinitions_r.
+
+data details_of_implementings_state type standard table of
+      impldet_state_type with key clskey.
+
+data component_type_source_table type seo_type_sources.
+
+data default_lang_vers type if_abap_language_version=>ty_version value if_abap_language_version=>gc_version-standard_source_code.
+
+* Local classes:
+include lseokd01.

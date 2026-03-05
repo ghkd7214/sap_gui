@@ -1,0 +1,44 @@
+*&---------------------------------------------------------------------*
+*& Report ZQUIZ_20_G05
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZQUIZ_20_G05.
+
+DATA: LT_INSERT TYPE TABLE OF YTC1002_05.
+
+" mandt는 상관없음, abap db 서버에 직접 들어가서 작업하는거라 굳이 작성 안해도됨
+SELECT CUSTOMID,
+       CASE
+         WHEN COUNT( BOOKID ) < 10 THEN 'BRZ'
+         WHEN COUNT( BOOKID ) >= 10 AND COUNT( BOOKID ) < 30 THEN 'SLV'
+         WHEN COUNT( BOOKID ) >= 30 AND COUNT( BOOKID ) < 50 THEN 'GLD'
+         WHEN COUNT( BOOKID ) >= 50 AND COUNT( BOOKID ) < 70 THEN 'PLT'
+         WHEN COUNT( BOOKID ) >= 70 THEN 'DIA'
+       END AS CUSTOMLV,
+       CASE
+         WHEN COUNT( BOOKID ) < 10 THEN 100
+         WHEN COUNT( BOOKID ) >= 10 AND COUNT( BOOKID ) < 30 THEN 110
+         WHEN COUNT( BOOKID ) >= 30 AND COUNT( BOOKID ) < 50 THEN 120
+         WHEN COUNT( BOOKID ) >= 50 AND COUNT( BOOKID ) < 70 THEN 130
+         WHEN COUNT( BOOKID ) >= 70 THEN 150
+       END AS BONRATE
+  FROM SBOOK
+  WHERE FLDATE <= @SY-DATUM
+   AND CANCELLED <> 'X'
+  GROUP BY CUSTOMID
+  INTO CORRESPONDING FIELDS OF TABLE @LT_INSERT.
+
+" delete에 commit은 불필요
+DELETE FROM YTC1002_05.
+
+*COMMIT WORK.
+" insert가 modify보다 순수 성능 좋음
+" subrc(오류확인)은 insert 후 insert가 된지 확인 후 시행
+INSERT YTC1002_05 FROM TABLE LT_INSERT.
+IF SY-SUBRC = 0.
+  WRITE: '성공'.
+*    MODIFY YTC1002_05 FROM TABLE @LT_INSERT.
+ELSE.
+  WRITE: '실패'.
+ENDIF.

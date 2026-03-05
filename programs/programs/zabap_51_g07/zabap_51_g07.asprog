@@ -1,0 +1,48 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_51_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap_51_g07.
+
+CLASS LCL_GENERIC DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      WRITE_ANY_TABLE IMPORTING IG_INFO TYPE ANY
+                                IT_DATA TYPE ANY.
+ENDCLASS.
+
+CLASS LCL_GENERIC IMPLEMENTATION.
+  METHOD WRITE_ANY_TABLE.
+    FIELD-SYMBOLS <FS_LINE> TYPE ANY.
+
+    LOOP AT IT_DATA ASSIGNING <FS_LINE>.
+
+    ENDLOOP.
+
+    WRITE:/ IG_INFO.
+  ENDMETHOD.
+ENDCLASS.
+
+DATA: GV_CARRID  TYPE SCARR-CARRID VALUE 'AA',
+      GS_SCARR   TYPE SCARR,
+      GS_SFLIGHT TYPE SFLIGHT,
+      GT_SCARR   TYPE TABLE OF SCARR.
+
+START-OF-SELECTION.
+*  SELECT SINGLE *
+*    INTO GS_SCARR
+*    FROM SCARR
+*    WHERE CARRID = 'LH'.
+
+  SELECT SINGLE *
+    INTO GS_SFLIGHT
+    FROM SFLIGHT
+    WHERE CARRID = 'AA'
+      AND CONNID = '0017'
+      AND FLDATE = '20250724'.
+
+  CALL METHOD LCL_GENERIC=>WRITE_ANY_TABLE
+    EXPORTING
+      IG_INFO = GS_SFLIGHT
+      IT_DATA = GT_SCARR.

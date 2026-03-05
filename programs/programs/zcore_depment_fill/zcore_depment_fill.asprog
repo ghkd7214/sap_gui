@@ -1,0 +1,24 @@
+*&---------------------------------------------------------------------*
+*& Report zcore_depment_fill
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zcore_depment_fill.
+
+DATA: lt_dep_rel type table of /lrn/depment_rel,
+      ls_dep_rel like line of lt_dep_rel.
+
+DATA: lt_depment type table of zg07_depment,
+      ls_depment like line of lt_depment.
+
+SELECT *
+ INTO TABLE LT_DEPMENT
+ FROM /LRN/DEPMENT_REL.
+
+ DELETE FROM zg07_depment.
+ INSERT zg07_depment FROM TABLE LT_DEPMENT.
+ IF SY-SUBRC <> 0.
+  MESSAGE 'ERROR' TYPE 'E'.
+  ELSE.
+  MESSAGE 'SUCCESS' TYPE 'S'.
+  endif.

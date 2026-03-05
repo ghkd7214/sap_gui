@@ -1,0 +1,21 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_48_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_48_G07.
+
+DATA: GS_SCARR TYPE ZTSCARR_G07.
+
+GS_SCARR-CARRID = 'AA'.
+
+* DB table 1건 데이터 삭제.
+*DELETE ZTSCARR_G00 FROM GS_SCARR.
+* Or....
+DELETE FROM ZTSCARR_G07
+  WHERE carrid = 'AF'.
+IF SY-SUBRC = 0.
+  MESSAGE 'Success, Data delete' TYPE 'S'.
+ELSE.
+  MESSAGE 'Error, Data delete' TYPE 'E'.
+ENDIF.

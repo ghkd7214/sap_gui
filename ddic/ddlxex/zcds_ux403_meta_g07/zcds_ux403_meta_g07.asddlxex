@@ -1,0 +1,14 @@
+@Metadata.layer: #CUSTOMER
+annotate view ZCDS_UX403_META_G07
+  with 
+{
+  @UI.lineItem: [{ position: 10 }]
+  SalesOrderID;
+  @UI.lineItem: [{ position: 20 }]
+  CustomerID;
+  @UI.lineItem: [{ position: 30 }]
+  CompanyName;
+  @UI.lineItem: [{ position: 40 }]
+  GrossAmount;
+  
+}

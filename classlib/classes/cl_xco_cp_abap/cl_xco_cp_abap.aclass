@@ -1,0 +1,33 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO CP ABAP: Internal API
+"! </p>
+"!
+"! Internal API for package S_XCO_CP_ABAP.
+CLASS cl_xco_cp_abap DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      function_module TYPE REF TO if_xco_function_module_factory READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+
+  PRIVATE SECTION.
+    CLASS-METHODS:
+      set_function_module.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_CP_ABAP IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    set_function_module( ).
+  ENDMETHOD.
+
+
+  METHOD set_function_module.
+    DATA(lo_tool_set) = NEW cl_xco_cp_fm_tool_set( cl_xco_cp_ar=>object ).
+    function_module = NEW cl_xco_function_module_factory( lo_tool_set ).
+  ENDMETHOD.
+ENDCLASS.

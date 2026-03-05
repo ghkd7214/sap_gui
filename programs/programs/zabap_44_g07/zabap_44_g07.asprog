@@ -1,0 +1,38 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_44_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap_44_g07.
+
+DATA: gt_scarr TYPE TABLE OF ztscarr_g07,
+      gs_scarr LIKE LINE OF gt_scarr.
+
+gs_scarr-carrid = 'DL'.
+gs_scarr-carrname = 'Delta Airway'.
+gs_scarr-currcode = 'USD'.
+gs_scarr-url = 'Delta@delta.com'.
+APPEND gs_scarr TO gt_scarr.
+
+gs_scarr-carrid = 'AF'.
+gs_scarr-carrname = 'Air France'.
+gs_scarr-currcode = 'EUR'.
+gs_scarr-url = 'af@af.com'.
+APPEND gs_scarr TO gt_scarr.
+
+SELECT *
+  APPENDING CORRESPONDING FIELDS OF TABLE gt_scarr
+  FROM scarr
+  WHERE carrid BETWEEN 'SQ' AND 'UA'.
+
+*INSERT ZTSCARR_G07 FROM TABLE GT_SCARR.
+*  OR....
+* 중복된 데이터가 최소 한건이 있을 경유. 데이터 생성됨.
+* SY-SUBRC의 값은 4가 리턴됨.
+INSERT ztscarr_g07 FROM TABLE gt_scarr
+  ACCEPTING DUPLICATE KEYS.
+IF sy-subrc = 0.
+  MESSAGE 'Success, Data save' TYPE 'S'.
+ELSE.
+  MESSAGE 'Error, Data save' TYPE 'E'.
+ENDIF.

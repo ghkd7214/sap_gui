@@ -1,0 +1,53 @@
+class ZCL_G07_HOTEL definition
+  public
+  create public .
+
+public section.
+
+  interfaces ZIF_G07_PARTNER .
+
+  methods CONSTRUCTOR
+    importing
+      !IV_NAME type STRING
+      !IV_BEDS type I .
+  methods DISPLAY_ATTRIBUTES .
+  class-methods DISPLAY_N_O_HOTELS .
+protected section.
+
+  constants C_POS type I value 30 ##NO_TEXT.
+private section.
+
+  data MV_NAME type STRING .
+  data MV_BEDS type I .
+  class-data GV_N_O_HOTELS type I .
+ENDCLASS.
+
+
+
+CLASS ZCL_G07_HOTEL IMPLEMENTATION.
+
+
+  method CONSTRUCTOR.
+    mv_name = iv_name.
+    mv_beds = iv_beds.
+
+    gv_n_o_hotels = gv_n_o_hotels + 1.
+  endmethod.
+
+
+  method DISPLAY_ATTRIBUTES.
+    write:/ 'Hotel ', at c_pos mv_name,
+            'Total number of beds :', at c_pos mv_beds.
+    uline.
+  endmethod.
+
+
+  method DISPLAY_N_O_HOTELS.
+    WRITE:/ 'Total number of hotels :' , gv_n_o_hotels.
+  endmethod.
+
+
+  method ZIF_G07_PARTNER~DISPLAY_PARTNER.
+    ME->DISPLAY_ATTRIBUTES( ).
+  endmethod.
+ENDCLASS.

@@ -1,0 +1,122 @@
+CLASS ltc_test DEFINITION FINAL CREATE PUBLIC
+    FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
+  PRIVATE SECTION.
+    METHODS:
+      test_class FOR TESTING,
+
+      test_interface FOR TESTING,
+
+      test_function_group FOR TESTING,
+
+      test_function_module FOR TESTING,
+
+      test_class_name
+        IMPORTING
+          iv_class_name TYPE sxco_ao_object_name,
+
+      test_interface_name
+        IMPORTING
+          iv_interface_name TYPE sxco_ao_object_name,
+
+      test_function_group_name
+        IMPORTING
+          iv_function_group_name TYPE sxco_fg_object_name,
+
+      test_function_module_name
+        IMPORTING
+          iv_function_module_name TYPE sxco_fm_name.
+ENDCLASS.
+
+CLASS ltc_test IMPLEMENTATION.
+  METHOD test_class.
+    test_class_name( 'CL_MY_CLASS' ).
+    test_class_name( 'myClass' ).
+    test_class_name( '/NMSP/MY_CLASS' ).
+  ENDMETHOD.
+
+  METHOD test_interface.
+    test_interface_name( 'IF_MY_INTERFACE' ).
+    test_interface_name( 'myInterface' ).
+    test_interface_name( '/NMSP/MY_INTERFACE' ).
+  ENDMETHOD.
+
+  METHOD test_function_group.
+    test_function_group_name( 'MY_FUNCTION_GROUP' ).
+    test_function_group_name( 'myFunctionGroup' ).
+    test_function_group_name( '/NMSP/MY_FUNCTION_GROUP' ).
+  ENDMETHOD.
+
+  METHOD test_function_module.
+    test_function_module_name( 'MY_FUNCTION_MOUDULE' ).
+    test_function_module_name( 'myFunctionModule' ).
+    test_function_module_name( '/NMSP/MY_FUNCTION_MODULE' ).
+  ENDMETHOD.
+
+  METHOD test_class_name.
+    DATA(lo_class) = xco_cp_abap=>class( iv_class_name ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_class->name
+      exp = to_upper( iv_class_name )
+    ).
+
+    DATA(lv_class_name) = to_lower( iv_class_name ).
+    lo_class = xco_cp_abap=>class( CONV #( lv_class_name ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_class->name
+      exp = to_upper( iv_class_name )
+    ).
+  ENDMETHOD.
+
+  METHOD test_interface_name.
+    DATA(lo_interface) = xco_cp_abap=>interface( iv_interface_name ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_interface->name
+      exp = to_upper( iv_interface_name )
+    ).
+
+    DATA(lv_interface_name) = to_lower( iv_interface_name ).
+    lo_interface = xco_cp_abap=>interface( CONV #( lv_interface_name ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_interface->name
+      exp = to_upper( iv_interface_name )
+    ).
+  ENDMETHOD.
+
+  METHOD test_function_group_name.
+    DATA(lo_function_group) = xco_cp_abap=>function_group( iv_function_group_name ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_function_group->name
+      exp = to_upper( iv_function_group_name )
+    ).
+
+    DATA(lv_function_group_name) = to_lower( iv_function_group_name ).
+    lo_function_group = xco_cp_abap=>function_group( CONV #( lv_function_group_name ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_function_group->name
+      exp = to_upper( iv_function_group_name )
+    ).
+  ENDMETHOD.
+
+  METHOD test_function_module_name.
+    DATA(lo_function_module) = xco_cp_abap=>function_module( iv_function_module_name ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_function_module->name
+      exp = to_upper( iv_function_module_name )
+    ).
+
+    DATA(lv_function_module_name) = to_lower( iv_function_module_name ).
+    lo_function_module = xco_cp_abap=>function_module( CONV #( lv_function_module_name ) ).
+
+    cl_abap_unit_assert=>assert_equals(
+      act = lo_function_module->name
+      exp = to_upper( iv_function_module_name )
+    ).
+  ENDMETHOD.
+ENDCLASS.

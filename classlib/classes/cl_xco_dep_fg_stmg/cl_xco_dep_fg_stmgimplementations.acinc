@@ -1,0 +1,82 @@
+CLASS lcl_tr_get_transport_target DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          iv_use_default       TYPE REF TO abap_bool
+          iv_get_layer_only    TYPE REF TO abap_bool
+          iv_development_class TYPE REF TO tdevc-devclass
+          iv_transport_layer   TYPE REF TO tcetral-translayer
+          iv_source_system     TYPE REF TO tcesyst-sysname
+          iv_source_client     TYPE REF TO mandt
+          ev_target            TYPE REF TO tcerele-consys
+          ev_layer             TYPE REF TO tcetral-translayer.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      iv_use_default       TYPE REF TO abap_bool,
+      iv_get_layer_only    TYPE REF TO abap_bool,
+      iv_development_class TYPE REF TO tdevc-devclass,
+      iv_transport_layer   TYPE REF TO tcetral-translayer,
+      iv_source_system     TYPE REF TO tcesyst-sysname,
+      iv_source_client     TYPE REF TO mandt,
+      ev_target            TYPE REF TO tcerele-consys,
+      ev_layer             TYPE REF TO tcetral-translayer.
+ENDCLASS.
+
+CLASS lcl_tr_get_transport_target IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->iv_use_default = iv_use_default.
+    me->iv_get_layer_only = iv_get_layer_only.
+    me->iv_development_class = iv_development_class.
+    me->iv_transport_layer = iv_transport_layer.
+    me->iv_source_system = iv_source_system.
+    me->iv_source_client = iv_source_client.
+
+    me->ev_target = ev_target.
+    me->ev_layer = ev_layer.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_GET_TRANSPORT_TARGET'
+      EXPORTING
+        iv_use_default             = iv_use_default->*
+        iv_get_layer_only          = iv_get_layer_only->*
+        iv_development_class       = iv_development_class->*
+        iv_transport_layer         = iv_transport_layer->*
+        iv_source_system           = iv_source_system->*
+        iv_source_client           = iv_source_client->*
+      IMPORTING
+        ev_target                  = ev_target->*
+        ev_layer                   = ev_layer->*
+      EXCEPTIONS
+        wrong_call                 = 1
+        invalid_input              = 2
+        cts_initialization_failure = 3
+        OTHERS                     = 4.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_get_transport_target.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ iv_use_default->* },{ iv_get_layer_only->* },|
+      && |{ iv_development_class->* },{ iv_transport_layer->* },{ iv_source_system->* },|
+      && |{ iv_source_client->* })|.
+  ENDMETHOD.
+ENDCLASS.

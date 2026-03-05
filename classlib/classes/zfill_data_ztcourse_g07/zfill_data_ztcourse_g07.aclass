@@ -1,0 +1,82 @@
+CLASS zfill_data_ztcourse_g07 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS zfill_data_ztcourse_g07 IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+    DATA: lt_course TYPE TABLE OF ztcourse_g07.
+
+    lt_course = VALUE #(
+        ( course_uuid = cl_system_uuid=>create_uuid_x16_static( )
+          course_id = 'S4D437'
+          course_name = 'ABAP Restful APPlication Programming'
+          course_length = 5
+          country = 'KR'
+          currency_code = 'KRW'
+          price = 50000
+          blocked = ' '
+          description = 'How to Create and bulid RAP'
+          )
+         ( course_uuid = cl_system_uuid=>create_uuid_x16_static( )
+          course_id = 'S4D438'
+          course_name = 'ABAP Cloud Development'
+          course_length = 5
+          country = 'KR'
+          currency_code = 'KRW'
+          price = 50000
+          blocked = ' '
+          description = 'How to Create and bulid ABAP Cloud APP'
+          )
+         ( course_uuid = cl_system_uuid=>create_uuid_x16_static( )
+          course_id = 'S4D439'
+          course_name = 'ABAP Core Data Service'
+          course_length = 5
+          country = 'KR'
+          currency_code = 'KRW'
+          price = 50000
+          blocked = ' '
+          description = 'How to Create and bulid CDS'
+          )
+         ( course_uuid = cl_system_uuid=>create_uuid_x16_static( )
+          course_id = 'S4D440'
+          course_name = 'ABAP Programming for SAP HANA'
+          course_length = 5
+          country = 'KR'
+          currency_code = 'KRW'
+          price = 50000
+          blocked = ' '
+          description = 'How to Create and bulid ABAP for HANA APP'
+         )
+         ( course_uuid = cl_system_uuid=>create_uuid_x16_static( )
+           course_id = 'S4D441'
+           course_name = 'ABAP Object Oriented Programming'
+           course_length = 5
+           country = 'KR'
+           currency_code = 'KRW'
+           price = 50000
+           blocked = ' '
+           description = 'How to Create and bulid OOP in ABAP APP'
+         )
+   ).
+
+    DELETE FROM ztcourse_g07.
+    INSERT ztcourse_g07 FROM TABLE @lt_course.
+    IF sy-subrc = 0.
+      out->write( |Data inserted successfully| ).
+    ELSE.
+      out->write( |Data insertion failed| ).
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.

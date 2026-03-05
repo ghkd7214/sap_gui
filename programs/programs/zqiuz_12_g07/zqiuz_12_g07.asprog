@@ -1,0 +1,141 @@
+*&---------------------------------------------------------------------*
+*& Report ZQIUZ_12_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zqiuz_12_g07.
+
+DATA: gt_sflight TYPE TABLE OF sflight,
+      gs_sflight LIKE LINE OF gt_sflight.
+
+DATA: gt_scarr TYPE TABLE OF scarr,
+      gs_scarr LIKE LINE OF gt_scarr.
+
+TYPES : BEGIN OF ty_list,
+          carrid   TYPE scarr-carrid,
+          carrname TYPE scarr-carrname,
+          currcode TYPE scarr-currcode,
+
+          jan      TYPE sflight-price,
+          feb      TYPE sflight-price,
+          mar      TYPE sflight-price,
+          apr      TYPE sflight-price,
+          may      TYPE sflight-price,
+          jun      TYPE sflight-price,
+          jul      TYPE sflight-price,
+          aug      TYPE sflight-price,
+          sep      TYPE sflight-price,
+          oct      TYPE sflight-price,
+          nov      TYPE sflight-price,
+          dec      TYPE sflight-price,
+        END OF ty_list.
+
+DATA gt_alltable TYPE TABLE OF ty_list.
+
+SELECT-OPTIONS : so_carid FOR gs_scarr-carrid NO-EXTENSION.
+*                 so_fldat FOR lv_input_years NO-EXTENSION.
+
+PARAMETERS pa_fldat TYPE c LENGTH 4.
+
+DATA: ex_from      TYPE t009b-bdatj,
+      ex_to        TYPE t009b-periv,
+
+      lv_date_from TYPE sy-datum,
+      lv_date_to   TYPE sy-datum.
+
+INITIALIZATION.
+
+  ex_to = 'K4'.
+
+AT SELECTION-SCREEN.
+
+  ex_from = pa_fldat(4).
+
+  CALL FUNCTION '/SOMO/FIRST_AND_LAST_DAYINYEAR'
+    EXPORTING
+      i_gjahr     = ex_from
+      i_periv     = ex_to
+    IMPORTING
+      e_first_day = lv_date_from
+      e_last_day  = lv_date_to
+    EXCEPTIONS
+      input_false
+      t009_notfound
+      t009b_notfound.
+
+  IF sy-subrc <> 0.
+    MESSAGE ' 함수호출실패' TYPE 'E'.
+  ENDIF.
+
+  SELECT sf~carrid,
+         sc~carrname,
+         sc~currcode,
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '01'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS jan,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '02'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS feb,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '03'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS mar,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '04'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS apr,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '05'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS may,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '06'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS jun,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '07'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS jul,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '08'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS aug,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '09'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS sep,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '10'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS oct,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '11'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS nov,
+
+         SUM( CASE WHEN substring( fldate, 5, 2 ) = '12'
+                   THEN paymentsum
+                   ELSE 0
+               END ) AS dec
+    FROM sflight AS sf
+         INNER JOIN scarr AS sc ON sf~carrid = sc~carrid
+    WHERE sf~carrid IN   @so_carid
+      AND sf~fldate BETWEEN @lv_date_from AND @lv_date_to
+    GROUP BY sf~carrid,
+             sc~carrname,
+             sc~currcode
+    INTO CORRESPONDING FIELDS OF TABLE @gt_alltable.
+
+  cl_demo_output=>display( gt_alltable ).

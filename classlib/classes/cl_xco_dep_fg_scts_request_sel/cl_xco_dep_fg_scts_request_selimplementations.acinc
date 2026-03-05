@@ -1,0 +1,234 @@
+CLASS lcl_tr_get_request_of_task DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          is_trkorr               TYPE REF TO trkorr
+          iv_read_objs            TYPE REF TO char1
+          iv_read_keys            TYPE REF TO char1
+          iv_only_additional_objs TYPE REF TO char1
+          es_request              TYPE REF TO trwbo_request_header
+          et_objects              TYPE REF TO tr_objects
+          et_keys                 TYPE REF TO tr_keys.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      is_trkorr               TYPE REF TO trkorr,
+      iv_read_objs            TYPE REF TO char1,
+      iv_read_keys            TYPE REF TO char1,
+      iv_only_additional_objs TYPE REF TO char1,
+
+      es_request              TYPE REF TO trwbo_request_header,
+      et_objects              TYPE REF TO tr_objects,
+      et_keys                 TYPE REF TO tr_keys.
+ENDCLASS.
+
+CLASS lcl_tr_get_request_of_task IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->is_trkorr = is_trkorr.
+    me->iv_read_objs = iv_read_objs.
+    me->iv_read_keys = iv_read_keys.
+    me->iv_only_additional_objs = iv_only_additional_objs.
+
+    me->es_request = es_request.
+    me->et_objects = et_objects.
+    me->et_keys = et_keys.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_GET_REQUEST_OF_TASK'
+      EXPORTING
+        is_trkorr               = is_trkorr->*
+        iv_read_objs            = iv_read_objs->*
+        iv_read_keys            = iv_read_keys->*
+        iv_only_additional_objs = iv_only_additional_objs->*
+      IMPORTING
+        es_request              = es_request->*
+        et_objects              = et_objects->*
+        et_keys                 = et_keys->*
+      EXCEPTIONS
+        invalid_input           = 1
+        OTHERS                  = 2.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_get_request_of_task.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |{ is_trkorr->* }|.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_tr_read_request DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          iv_read_e070       TYPE REF TO char1
+          iv_read_e07t       TYPE REF TO char1
+          iv_read_e070c      TYPE REF TO char1
+          iv_read_e070m      TYPE REF TO char1
+          iv_read_objs_keys  TYPE REF TO char1
+          iv_read_attributes TYPE REF TO char1
+          iv_trkorr          TYPE REF TO trkorr
+          cs_request         TYPE REF TO trwbo_request.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      iv_read_e070       TYPE REF TO char1,
+      iv_read_e07t       TYPE REF TO char1,
+      iv_read_e070c      TYPE REF TO char1,
+      iv_read_e070m      TYPE REF TO char1,
+      iv_read_objs_keys  TYPE REF TO char1,
+      iv_read_attributes TYPE REF TO char1,
+      iv_trkorr          TYPE REF TO trkorr,
+
+      cs_request         TYPE REF TO trwbo_request.
+ENDCLASS.
+
+CLASS lcl_tr_read_request IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->iv_read_e070 = iv_read_e070.
+    me->iv_read_e07t = iv_read_e07t.
+    me->iv_read_e070c = iv_read_e070c.
+    me->iv_read_e070m = iv_read_e070m.
+    me->iv_read_objs_keys = iv_read_objs_keys.
+    me->iv_read_attributes = iv_read_attributes.
+    me->iv_trkorr = iv_trkorr.
+
+    me->cs_request = cs_request.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_READ_REQUEST'
+      EXPORTING
+        iv_read_e070       = iv_read_e070->*
+        iv_read_e07t       = iv_read_e07t->*
+        iv_read_e070c      = iv_read_e070c->*
+        iv_read_e070m      = iv_read_e070m->*
+        iv_read_objs_keys  = iv_read_objs_keys->*
+        iv_read_attributes = iv_read_attributes->*
+        iv_trkorr          = iv_trkorr->*
+      CHANGING
+        cs_request         = cs_request->*
+      EXCEPTIONS
+        error_occured      = 1
+        no_authorization   = 2
+        OTHERS             = 3.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_read_request.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ iv_read_e070->* },{ iv_read_e07t->* },{ iv_read_e070c->* },|
+      && |{ iv_read_e070m->* },{ iv_read_objs_keys->* },{ iv_read_attributes->* },{ iv_trkorr->* })|.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_trint_read_request DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          iv_read_e070       TYPE REF TO char1
+          iv_read_e07t       TYPE REF TO char1
+          iv_read_e070c      TYPE REF TO char1
+          iv_read_e070m      TYPE REF TO char1
+          iv_read_objs_keys  TYPE REF TO char1
+          iv_read_attributes TYPE REF TO char1
+          cs_request         TYPE REF TO trwbo_request.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      iv_read_e070       TYPE REF TO char1,
+      iv_read_e07t       TYPE REF TO char1,
+      iv_read_e070c      TYPE REF TO char1,
+      iv_read_e070m      TYPE REF TO char1,
+      iv_read_objs_keys  TYPE REF TO char1,
+      iv_read_attributes TYPE REF TO char1,
+
+      cs_request         TYPE REF TO trwbo_request.
+ENDCLASS.
+
+CLASS lcl_trint_read_request IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->iv_read_e070 = iv_read_e070.
+    me->iv_read_e07t = iv_read_e07t.
+    me->iv_read_e070c = iv_read_e070c.
+    me->iv_read_e070m = iv_read_e070m.
+    me->iv_read_objs_keys = iv_read_objs_keys.
+    me->iv_read_attributes = iv_read_attributes.
+
+    me->cs_request = cs_request.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TRINT_READ_REQUEST'
+      EXPORTING
+        iv_read_e070       = iv_read_e070->*
+        iv_read_e07t       = iv_read_e07t->*
+        iv_read_e070c      = iv_read_e070c->*
+        iv_read_e070m      = iv_read_e070m->*
+        iv_read_objs_keys  = iv_read_objs_keys->*
+        iv_read_attributes = iv_read_attributes->*
+      CHANGING
+        cs_request         = cs_request->*
+      EXCEPTIONS
+        error_occured      = 1
+        OTHERS             = 2.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-trint_read_request.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ iv_read_e070->* },{ iv_read_e07t->* },{ iv_read_e070c->* },|
+      && |{ iv_read_e070m->* },{ iv_read_objs_keys->* },{ iv_read_attributes->* },{ cs_request->h-trkorr })|.
+  ENDMETHOD.
+ENDCLASS.

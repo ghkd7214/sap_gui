@@ -1,0 +1,66 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO CTS: External API
+"! </p>
+"!
+"! External API for package S_XCO_CTS.
+CLASS xco_cts DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      "! OBOSOLETE Use xco_system=>tadir
+      tadir               TYPE REF TO if_xco_tadir READ-ONLY,
+
+      "! OBSOLETE
+      packages            TYPE REF TO if_xco_cts_packages READ-ONLY,
+
+      program_id          TYPE REF TO cl_xco_cts_program_id_f READ-ONLY,
+      object_function     TYPE REF TO cl_xco_cts_object_function_f READ-ONLY,
+      object_operation    TYPE REF TO cl_xco_cts_object_operation_f READ-ONLY,
+
+      object              TYPE REF TO if_xco_cts_api_object READ-ONLY,
+
+      object_choice       TYPE REF TO if_xco_cts_object_choice_fctry READ-ONLY,
+
+      tabkey              TYPE REF TO if_xco_cts_tabkey_factory READ-ONLY,
+
+      transport           TYPE REF TO if_xco_transport_factory READ-ONLY,
+      transports          TYPE REF TO if_xco_transports_factory READ-ONLY,
+
+      change_scenario     TYPE REF TO if_xco_cts_change_scenario_fct READ-ONLY,
+
+      recording_mechanism TYPE REF TO if_xco_cts_rcrdng_mchnsm_fctry READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS XCO_CTS IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    " Obsolete members.
+    tadir = xco_system=>tadir.
+    packages = NEW cl_xco_cts_packages( cl_xco_dep_fg_strd=>instance ).
+
+    program_id = NEW cl_xco_cts_program_id_f( ).
+    object_function = NEW cl_xco_cts_object_function_f( ).
+    object_operation = NEW cl_xco_cts_object_operation_f( ).
+
+    DATA(lo_tool_set) = NEW cl_xco_cts_tool_set( ).
+
+    DATA(lo_object_factory) = NEW cl_xco_cts_object_factory( lo_tool_set ).
+    object = NEW cl_xco_cts_api_object( lo_object_factory ).
+
+    object_choice = NEW cl_xco_cts_object_choice_fctry( ).
+
+    tabkey = NEW cl_xco_cts_tabkey_factory( ).
+
+    transport = NEW cl_xco_transport_factory( lo_tool_set ).
+    transports = NEW cl_xco_transports_factory( lo_tool_set ).
+
+    change_scenario = NEW cl_xco_cts_change_scenario_fct( lo_tool_set ).
+
+    recording_mechanism = NEW cl_xco_cts_rcrdng_mchnsm_fctry( lo_tool_set ).
+  ENDMETHOD.
+ENDCLASS.

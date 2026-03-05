@@ -1,0 +1,39 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo: { typeName: 'Course', typeNamePlural: 'Course', 
+                     title: { value: 'CourseName' },
+               description: { value: 'CourseId' } }
+annotate entity zc_course_g07
+    with 
+{   
+    @UI.facet: [{ type: #IDENTIFICATION_REFERENCE, position: 10, label: 'Course Detail' }]
+    
+    @UI.hidden: true
+    CourseUuid;
+    @UI: { lineItem: [{ position: 10, label: 'Course ID' }],  
+           identification: [{position: 10, label: 'Course ID'}] } 
+    CourseId;
+    @UI: { lineItem: [{ position: 20, label: 'Course Name' }],
+             identification: [{position: 20, label: 'Course Name'}] }
+    CourseName;
+    @UI: { lineItem: [{ position: 30, label: 'Course Length' }],
+           identification: [{position: 30, label: 'Course Length'}] }
+    CourseLength;
+    @UI: { lineItem: [{ position: 40, label: 'Country' }],
+           identification: [{position: 40, label: 'Country'}] }
+    Country;
+    @UI.lineItem: [{ position: 50, label: 'Currency', hidden: true }]
+    CurrencyCode;
+    @UI: { lineItem: [{ position: 60, label: 'Price' }],
+          identification: [{position: 60, label: 'Price'}] }
+    Price;
+    @UI: { lineItem: [{ position: 70, label: 'Blocked' }],
+          identification: [{position: 70, label: 'Blocked'}] }
+    Blocked;
+    @UI: { lineItem: [{ position: 80, label: 'Description' }],
+           identification: [{position: 80, label: 'Description'}] }
+    Description;
+    @UI.hidden: true
+    ChangedBy;
+    @UI.hidden: true
+    ChangedAt;
+}

@@ -1,0 +1,21 @@
+* regenerated at 2025.12.01 10:32:40
+*******************************************************************
+*   System-defined Include-files.                                 *
+*******************************************************************
+  INCLUDE LZFUNC_MAINT_G21TOP.               " Global Declarations
+  INCLUDE LZFUNC_MAINT_G21UXX.               " Function Modules
+
+*******************************************************************
+*   User-defined Include-files (if necessary).                    *
+*******************************************************************
+* INCLUDE LZFUNC_MAINT_G21F...               " Subroutines
+* INCLUDE LZFUNC_MAINT_G21O...               " PBO-Modules
+* INCLUDE LZFUNC_MAINT_G21I...               " PAI-Modules
+* INCLUDE LZFUNC_MAINT_G21E...               " Events
+* INCLUDE LZFUNC_MAINT_G21P...               " Local class implement.
+* INCLUDE LZFUNC_MAINT_G21T99.               " ABAP Unit tests
+  INCLUDE LZFUNC_MAINT_G21F00                     . " subprograms
+  INCLUDE LZFUNC_MAINT_G21I00                     . " PAI modules
+  INCLUDE LSVIMFXX                                . " subprograms
+  INCLUDE LSVIMOXX                                . " PBO modules
+  INCLUDE LSVIMIXX                                . " PAI modules

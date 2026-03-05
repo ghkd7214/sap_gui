@@ -1,0 +1,47 @@
+CLASS zcl_course_data_fill_g07 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_COURSE_DATA_FILL_G07 IMPLEMENTATION.
+
+
+  METHOD if_oo_adt_classrun~main.
+    DATA lt_course TYPE TABLE OF zcourse_g07.
+
+    lt_course = VALUE #(
+        (
+            course_id = 'BC400'
+            course_name = 'ABAP Programming'
+            course_length = 5
+            country = 'KR'
+            currency_code = 'KRW'
+            price = '500000.00'
+            blocked = ''
+            description = 'How to develop ABAP Program'
+        )
+        (
+            course_id = 'S4D430'
+            course_name = 'ABAP Core Data Service'
+            course_length = 5
+            country = 'KR'
+            currency_code = 'KRW'
+            price = '500000.00'
+            blocked = ''
+            description = 'How to create and build ABAP CDS'
+        )
+    ).
+    DELETE FROM zcourse_g07.
+    INSERT zcourse_g07 FROM TABLE lt_course.
+    out->write( 'Success, Data saved' ).
+  ENDMETHOD.
+ENDCLASS.

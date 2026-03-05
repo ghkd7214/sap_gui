@@ -1,0 +1,317 @@
+*&---------------------------------------------------------------------*
+*& Report ZQUIZ_18_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZQUIZ_18_G07.
+
+* Output data.
+DATA: BEGIN OF GS_OUTPUT,
+        CARRID   TYPE SCARR-CARRID,
+        CARRNAME TYPE SCARR-CARRNAME,
+        CURRCODE TYPE SCARR-CURRCODE,
+        MON01    TYPE SFLIGHT-PAYMENTSUM,
+        MON02    TYPE SFLIGHT-PAYMENTSUM,
+        MON03    TYPE SFLIGHT-PAYMENTSUM,
+        MON04    TYPE SFLIGHT-PAYMENTSUM,
+        MON05    TYPE SFLIGHT-PAYMENTSUM,
+        MON06    TYPE SFLIGHT-PAYMENTSUM,
+        MON07    TYPE SFLIGHT-PAYMENTSUM,
+        MON08    TYPE SFLIGHT-PAYMENTSUM,
+        MON09    TYPE SFLIGHT-PAYMENTSUM,
+        MON10    TYPE SFLIGHT-PAYMENTSUM,
+        MON11    TYPE SFLIGHT-PAYMENTSUM,
+        MON12    TYPE SFLIGHT-PAYMENTSUM,
+      END OF GS_OUTPUT,
+      GT_OUTPUT LIKE TABLE OF GS_OUTPUT.
+
+* DB table sflight data read.
+DATA: GT_SFLIGHT TYPE TABLE OF SFLIGHT,
+      GS_SFLIGHT LIKE LINE OF GT_SFLIGHT.
+
+* DB table scarr data read.
+DATA: GT_SCARR TYPE TABLE OF SCARR,
+      GS_SCARR LIKE LINE OF GT_SCARR.
+
+* 년도의 시작일, 종료일.
+DATA: GV_BEGDT TYPE DATS,
+      GV_ENDDT TYPE DATS,
+      GV_YEAR  TYPE STRING.
+
+* Function code.
+DATA: OK_CODE TYPE SY-UCOMM.
+
+* Container & ALV Grid Control Referance variable.
+DATA: GO_CONT TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV  TYPE REF TO CL_GUI_ALV_GRID.
+
+* Internal table - Fieldcatalog.
+DATA: GT_FCAT TYPE LVC_T_FCAT.
+
+DATA: GS_LAYOUT TYPE LVC_S_LAYO.
+
+DATA: GV_FNAME TYPE STRING.
+
+FIELD-SYMBOLS: <FS_COMP> TYPE ANY. "
+
+* selection screen - input field.
+SELECT-OPTIONS: SO_CAR FOR GS_OUTPUT-CARRID.
+PARAMETERS: PA_YEAR TYPE N LENGTH 4.
+
+INITIALIZATION.
+* 년도 기본값 설정.
+  PA_YEAR = SY-DATUM+0(4).
+
+* SCARR 전체 데이터 read.
+  SELECT *
+    INTO TABLE GT_SCARR
+    FROM SCARR.
+
+START-OF-SELECTION.
+* 입력된 년도의 시작일 종료일 설정.
+  GV_BEGDT = PA_YEAR && '0101'.
+  GV_ENDDT = PA_YEAR && '1231'.
+
+* 년도 설정.
+  GV_YEAR = PA_YEAR && '%'.
+
+*  DB Table SFLIGHT 데이터 read.
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE GT_SFLIGHT
+    FROM SFLIGHT
+    WHERE CARRID IN SO_CAR
+*      AND FLDATE BETWEEN GV_BEGDT AND GV_ENDDT.
+      AND FLDATE LIKE GV_YEAR.
+
+  LOOP AT GT_SFLIGHT INTO GS_SFLIGHT.
+
+    READ TABLE GT_SCARR INTO GS_SCARR
+      WITH KEY CARRID = GS_SFLIGHT-CARRID.
+    IF SY-SUBRC = 0.
+      MOVE-CORRESPONDING GS_SCARR TO GS_OUTPUT.
+    ENDIF.
+
+    GV_FNAME = 'GS_OUTPUT-MON' && GS_SFLIGHT-FLDATE+4(2).
+    ASSIGN (GV_FNAME) TO <FS_COMP>.
+    <FS_COMP> = GS_SFLIGHT-PAYMENTSUM.
+
+    COLLECT GS_OUTPUT INTO GT_OUTPUT.
+    CLEAR: GS_SFLIGHT, GS_OUTPUT.
+  ENDLOOP.
+
+*  CL_DEMO_OUTPUT=>DISPLAY( GT_OUTPUT ).
+
+  CALL SCREEN 100.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0100 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module CLEAR_OK_CODE OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE CLEAR_OK_CODE OUTPUT.
+  CLEAR OK_CODE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module INIT_ALV OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE INIT_ALV OUTPUT.
+  IF GO_CONT IS INITIAL.
+    CREATE OBJECT GO_CONT
+      EXPORTING
+        CONTAINER_NAME              = 'AREA'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC <> 0.
+*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+    CREATE OBJECT GO_ALV
+      EXPORTING
+        I_PARENT          = GO_CONT
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC <> 0.
+* MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO
+*            WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.
+    ENDIF.
+
+    PERFORM SET_FCAT.
+
+    GS_LAYOUT-CWIDTH_OPT = 'X'.
+    GS_LAYOUT-ZEBRA = 'X'.
+
+    CALL METHOD GO_ALV->SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+        IS_LAYOUT                     = GS_LAYOUT
+      CHANGING
+        IT_OUTTAB                     = GT_OUTPUT
+        IT_FIELDCATALOG               = GT_FCAT
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC <> 0.
+* Implement suitable error handling here
+    ENDIF.
+
+  ENDIF.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Form SET_FCAT
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM SET_FCAT .
+
+* work area.
+  DATA LS_FCAT TYPE LVC_S_FCAT.
+
+  LS_FCAT-FIELDNAME = 'CARRID'.
+  LS_FCAT-COL_POS = 1.
+  LS_FCAT-REF_TABLE = 'SCARR'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CARRNAME'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-REF_TABLE = 'SCARR'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'CURRCODE'.
+  LS_FCAT-COL_POS = 3.
+  LS_FCAT-REF_TABLE = 'SCARR'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON01'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '1월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON02'.
+  LS_FCAT-COL_POS = 5.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '2월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON03'.
+  LS_FCAT-COL_POS = 6.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '3월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON04'.
+  LS_FCAT-COL_POS = 7.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '4월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON05'.
+  LS_FCAT-COL_POS = 8.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '5월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON06'.
+  LS_FCAT-COL_POS = 9.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '6월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON07'.
+  LS_FCAT-COL_POS = 10.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '7월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON08'.
+  LS_FCAT-COL_POS = 11.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '8월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON09'.
+  LS_FCAT-COL_POS = 12.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '9월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON10'.
+  LS_FCAT-COL_POS = 13.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '10월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON11'.
+  LS_FCAT-COL_POS = 14.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '11월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MON12'.
+  LS_FCAT-COL_POS = 15.
+  LS_FCAT-REF_TABLE = 'SFLIGHT'.
+  LS_FCAT-REF_FIELD = 'PAYMENTSUM'.
+  LS_FCAT-COLTEXT = '12월'.
+  LS_FCAT-CFIELDNAME = 'CURRCODE'.
+  APPEND LS_FCAT TO GT_FCAT.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE USER_COMMAND_0100 INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK' OR 'CANCEL'.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.

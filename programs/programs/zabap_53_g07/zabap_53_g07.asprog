@@ -1,0 +1,26 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_53_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_53_G07.
+
+DATA: gv_carrid TYPE scarr-carrid VALUE 'AA',
+      gv_fname TYPE string.
+
+FIELD-SYMBOLS <fs> TYPE any.
+
+PARAMETERS: pa_car TYPE scarr-CARRID.
+
+GV_FNAME = 'GV_CARRID'.
+
+ASSIGN GV_FNAME to <FS>.
+WRITE:/ <FS>.
+
+* GV_FNAME 변수에 <FS> field symbol이 포인터함.
+ASSIGN (GV_FNAME) to <FS>.
+WRITE:/ <FS>.
+
+gv_fname = 'PA_CAR'.
+ASSIGN (GV_FNAME) TO <FS>.
+WRITE:/ <FS>.

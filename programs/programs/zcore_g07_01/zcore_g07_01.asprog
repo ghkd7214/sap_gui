@@ -1,0 +1,17 @@
+*&---------------------------------------------------------------------*
+*& Report zcore_g07_01
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zcore_g07_01.
+
+SELECT * FROM z07_r_employee
+  INTO TABLE @DATA(gt_data).
+
+*loop AT gt_data into data(gs_data).
+*  wrITE:/ gs_data-EmployeeId,
+*          gs_data-LastName,
+*          gs_data-FirstName.
+*endloop.
+
+cl_demo_output=>display( gt_data ).

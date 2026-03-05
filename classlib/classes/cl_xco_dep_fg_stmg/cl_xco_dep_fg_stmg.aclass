@@ -1,0 +1,39 @@
+"! <p class="shorttext synchronized" lang="EN">XCO Dependency: STMG function group implementation</p>
+"!
+"! Implementation of {@link if_xco_dep_fg_stmg}.
+CLASS cl_xco_dep_fg_stmg DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    INTERFACES:
+      if_xco_dep_fg_stmg.
+
+    CLASS-DATA:
+      instance TYPE REF TO if_xco_dep_fg_stmg READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_DEP_FG_STMG IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    instance = NEW cl_xco_dep_fg_stmg( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_stmg~tr_get_transport_target.
+    DATA(lo_function_module_call) = NEW lcl_tr_get_transport_target(
+      iv_use_default       = REF #( iv_use_default )
+      iv_get_layer_only    = REF #( iv_get_layer_only )
+      iv_development_class = REF #( iv_development_class )
+      iv_transport_layer   = REF #( iv_transport_layer )
+      iv_source_system     = REF #( iv_source_system )
+      iv_source_client     = REF #( iv_source_client )
+      ev_target            = REF #( ev_target )
+      ev_layer             = REF #( ev_layer )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+ENDCLASS.

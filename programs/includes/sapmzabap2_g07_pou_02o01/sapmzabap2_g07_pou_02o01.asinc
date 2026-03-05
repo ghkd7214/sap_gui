@@ -1,0 +1,237 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZABAP2_G07_POU_02O01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Module STATUS_0100 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module CLEAR_OK_CODE OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE clear_ok_code OUTPUT.
+  CLEAR ok_code.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module GET_DATA_101 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE get_data_101 OUTPUT.
+  IF sbook-carrid IS NOT INITIAL.
+    CLEAR : btn1, btn2, btn3, btn4, btn5, btn6, btn7.
+
+    CALL FUNCTION 'Z_GET_BOOK_DATA_21'
+      EXPORTING
+        iv_carrid  = sbook-carrid
+        iv_connid  = sbook-connid
+        iv_fldate  = sbook-fldate
+        iv_bookid  = sbook-bookid
+      IMPORTING
+        es_booking = zspou03_bookinfo_21.
+
+    " Set Button
+    CASE zspou03_bookinfo_21-custtype.
+      WHEN 'B'.
+        btn1 = 'X'.
+      WHEN 'P'.
+        btn2 = 'X'.
+    ENDCASE.
+
+    CASE zspou03_bookinfo_21-smoker.
+      WHEN 'X'.
+        btn3 = 'X'.
+      WHEN ''.
+        btn4 = 'X'.
+    ENDCASE.
+
+    CASE zspou03_bookinfo_21-class.
+      WHEN 'Y'.
+        btn5 = 'X'.
+      WHEN 'C'.
+        btn6 = 'X'.
+      WHEN 'F'.
+        btn7 = 'X'.
+    ENDCASE.
+
+    " Set Early Bird Days
+    zspou03_bookinfo_21-earlybird = sbook-fldate - zspou03_bookinfo_21-order_date.
+    zspou03_bookinfo_21-saverage = ( zspou03_bookinfo_21-evalue1 + zspou03_bookinfo_21-evalue2 + zspou03_bookinfo_21-evalue3 +
+                                     zspou03_bookinfo_21-evalue4 + zspou03_bookinfo_21-evalue5 ) / 5.
+
+    " Get Cancelled_t
+    PERFORM get_domain.
+  ENDIF.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_SUBSCREEN OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_subscreen OUTPUT.
+  IF ok_code = 'FC1'.
+    gv_subsc = '0101'.
+    gv_tab = 'FC1'.
+  ELSEIF ok_code = 'FC2'.
+    gv_subsc = '0102'.
+    gv_tab = 'FC2'.
+  ELSEIF ok_code = 'FC3'.
+    gv_subsc = '0103'.
+    gv_tab = 'FC3'.
+  ELSEIF ok_code = 'FC4'.
+    gv_subsc = '0104'.
+    gv_tab = 'FC4'.
+  ENDIF.
+
+  tabstrip-activetab = gv_tab.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_APP_TOOLBAR OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_app_toolbar OUTPUT.
+  DATA : lt_exclude TYPE TABLE OF sy-ucomm,
+         ls_exclude TYPE sy-ucomm.
+
+  CLEAR : ls_exclude, lt_exclude.
+
+  IF sbook-carrid IS INITIAL.
+    ls_exclude = 'MENU'.
+    APPEND ls_exclude TO lt_exclude.
+    ls_exclude = 'LIST'.
+    APPEND ls_exclude TO lt_exclude.
+    ls_exclude = 'SURVEY'.
+    APPEND ls_exclude TO lt_exclude.
+
+  ELSEIF zspou03_bookinfo_21-menunumber IS INITIAL
+         AND zspou03_bookinfo_21-saverage   IS INITIAL.
+
+    ls_exclude = 'MENU'.
+    APPEND ls_exclude TO lt_exclude.
+    ls_exclude = 'LIST'.
+    APPEND ls_exclude TO lt_exclude.
+
+  ELSEIF zspou03_bookinfo_21-menunumber IS INITIAL
+         AND zspou03_bookinfo_21-saverage   IS NOT INITIAL.
+
+    ls_exclude = 'MENU'.
+    APPEND ls_exclude TO lt_exclude.
+    ls_exclude = 'SURVEY'.
+    APPEND ls_exclude TO lt_exclude.
+
+  ELSEIF zspou03_bookinfo_21-menunumber IS NOT INITIAL
+         AND zspou03_bookinfo_21-saverage   IS INITIAL.
+
+    ls_exclude = 'LIST'.
+    APPEND ls_exclude TO lt_exclude.
+
+  ELSEIF zspou03_bookinfo_21-menunumber IS NOT INITIAL
+         AND zspou03_bookinfo_21-saverage   IS NOT INITIAL.
+
+    ls_exclude = 'SURVEY'.
+     APPEND ls_exclude TO lt_exclude.
+
+  ENDIF.
+
+  SET PF-STATUS 'S100' EXCLUDING lt_exclude.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module GET_DATA_104 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE get_data_104 OUTPUT.
+  PERFORM get_data_104 USING sy-langu.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0110 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0110 OUTPUT.
+  SET PF-STATUS 'S110'.
+  SET TITLEBAR 'T110'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module GET_DATA_110 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE get_data_110 OUTPUT.
+  PERFORM get_data_110 USING sy-langu.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0200 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'S200'.
+  SET TITLEBAR 'T200'.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_APP_TOOLBAR_200 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_app_toolbar_200 OUTPUT.
+  DATA : lt_exclude2 TYPE TABLE OF sy-ucomm,
+         ls_exclude2 TYPE sy-ucomm.
+
+  CLEAR : ls_exclude2, lt_exclude2.
+
+  IF gv_mode = 'L'.
+    ls_exclude2 = 'SAVE'.
+    APPEND ls_exclude2 TO lt_exclude2.
+  ENDIF.
+
+  SET PF-STATUS 'S200' EXCLUDING lt_exclude2.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module SET_INIT OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE set_init OUTPUT.
+  IF gv_mode = 'L'.
+    LOOP AT SCREEN.
+      screen-input = '0'. " 출력 전용으로 설정
+    ENDLOOP.
+  ELSEIF gv_mode = 'S'.
+    MOVE-CORRESPONDING sbook TO zspou03_survey_info_21.
+
+    zspou03_survey_info_21-customid = zspou03_bookinfo_21-customid.
+    zspou03_survey_info_21-custtname = zspou03_bookinfo_21-custname.
+  ENDIF.
+
+  MODIFY SCREEN.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module GET_DATA_102 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE get_data_102 OUTPUT.
+  PERFORM get_data_102 USING sy-langu.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Module GET_DATA_103 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE get_data_103 OUTPUT.
+  CALL METHOD lcl_pou_03=>get_flight_data
+    EXPORTING
+      iv_carrid = sbook-carrid
+      iv_connid = sbook-connid
+      iv_fldate = sbook-fldate
+    IMPORTING
+      es_flight = zspou03_flight_info_21.
+ENDMODULE.

@@ -1,0 +1,210 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO ABAP SQL: External API
+"! </p>
+"!
+"! External API for package S_XCO_ABAP_SQL.
+CLASS xco_abap_sql DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      "! Access to the {@link cl_xco_asql_constraint_factory}.
+      constraint    TYPE REF TO cl_xco_asql_constraint_factory READ-ONLY,
+
+      "! Access to the {@link cl_xco_asql_condition_factory}.
+      condition     TYPE REF TO cl_xco_asql_condition_factory READ-ONLY,
+
+      "! Access to the {@link cl_xco_asql_literal_factory}.
+      literal       TYPE REF TO cl_xco_asql_literal_factory READ-ONLY,
+
+      "! Access to the {@link cl_xco_asql_host_variable_fct}.
+      host_variable TYPE REF TO cl_xco_asql_host_variable_fct READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor,
+
+      "! Obtains a column for the given name.
+      "!
+      "! @parameter iv_name | The name of the column
+      "! @parameter ro_column | The column for the given name
+      column
+        IMPORTING
+          iv_name          TYPE char30
+        RETURNING
+          VALUE(ro_column) TYPE REF TO cl_xco_asql_column,
+
+      "! Obtains a component for the given name.
+      "!
+      "! @parameter iv_name | The name of the component
+      "! @parameter ro_column | The component for the given name
+      component
+        IMPORTING
+          iv_name          TYPE cl_xco_asql_component=>tv_name
+        RETURNING
+          VALUE(ro_column) TYPE REF TO cl_xco_asql_component,
+
+      "! Obtains a database table for the given name.
+      "!
+      "! @parameter iv_name | The name of the database table
+      "! @parameter ro_database_table | The database table for the given name
+      database_table
+        IMPORTING
+          iv_name                  TYPE sxco_dbt_object_name
+        RETURNING
+          VALUE(ro_database_table) TYPE REF TO cl_xco_asql_ds_database_table,
+
+      "! Obtains a CDS entity for the given name.
+      "!
+      "! @parameter iv_name | The name of the CDS entity
+      "! @parameter ro_cds_entity | The CDS entity for the given name
+      cds_entity
+        IMPORTING
+          iv_name              TYPE sxco_cds_object_name
+        RETURNING
+          VALUE(ro_cds_entity) TYPE REF TO cl_xco_asql_ds_cds_entity,
+
+      "! Obtains a internal table for the given name.
+      "!
+      "! @parameter iv_name | The name of the internal table
+      "! @parameter ro_internal_table | The internal table for the given name
+      internal_table
+        IMPORTING
+          iv_name                  TYPE clike
+        RETURNING
+          VALUE(ro_internal_table) TYPE REF TO cl_xco_asql_ds_internal_table,
+
+      internal_table_ref
+        IMPORTING
+          it_internal_table        TYPE REF TO data
+        RETURNING
+          VALUE(ro_internal_table) TYPE REF TO cl_xco_asql_ds_intrnl_tbl_ref,
+
+      "! Obtains a select builder.
+      "!
+      "! <h1>The parameter iv_table is deprecated and will be removed</h1>
+      "!
+      "! @parameter iv_table | The table on which the select shall be based
+      "! @parameter ro_select_builder | The select builder
+      select_builder
+        IMPORTING
+          iv_table                 TYPE string OPTIONAL
+        RETURNING
+          VALUE(ro_select_builder) TYPE REF TO if_xco_asql_select_builder,
+
+      "! Obtains a insert builder.
+      "!
+      "! @parameter ro_insert_builder | The insert builder
+      insert_builder
+        RETURNING
+          VALUE(ro_insert_builder) TYPE REF TO if_xco_asql_insert_builder,
+
+      "! Obtains a modify builder.
+      "!
+      "! @parameter ro_modify_builder | The modify builder
+      modify_builder
+        RETURNING
+          VALUE(ro_modify_builder) TYPE REF TO if_xco_asql_modify_builder,
+
+      "! Obtains a update builder.
+      "!
+      "! @parameter ro_update_builder | The update builder
+      update_builder
+        RETURNING
+          VALUE(ro_update_builder) TYPE REF TO if_xco_asql_update_builder,
+
+      "! Obtains a delete builder.
+      "!
+      "! @parameter ro_delete_builder | The delete builder
+      delete_builder
+        RETURNING
+          VALUE(ro_delete_builder) TYPE REF TO if_xco_asql_delete_builder.
+ENDCLASS.
+
+
+
+CLASS XCO_ABAP_SQL IMPLEMENTATION.
+
+
+  METHOD cds_entity.
+    DATA(lo_tool_set) = NEW cl_xco_asql_tool_set( xco_abap_repository=>object ).
+
+    ro_cds_entity = NEW cl_xco_asql_ds_cds_entity(
+      iv_cds_entity_name        = iv_name
+      iv_with_privileged_access = abap_false
+      io_tool_set               = lo_tool_set
+    ).
+  ENDMETHOD.
+
+
+  METHOD class_constructor.
+    constraint = NEW cl_xco_asql_constraint_factory( ).
+    condition = NEW cl_xco_asql_condition_factory( ).
+
+    literal = NEW cl_xco_asql_literal_factory( ).
+    host_variable = NEW cl_xco_asql_host_variable_fct( ).
+  ENDMETHOD.
+
+
+  METHOD column.
+    ro_column = NEW cl_xco_asql_column(
+      iv_name        = iv_name
+      iv_data_source = ''
+    ).
+  ENDMETHOD.
+
+
+  METHOD component.
+    ro_column = NEW cl_xco_asql_component(
+      iv_name                    = iv_name
+      iv_of_for_all_entries_itab = abap_false
+    ).
+  ENDMETHOD.
+
+
+  METHOD database_table.
+    DATA(lo_tool_set) = NEW cl_xco_asql_tool_set( xco_abap_repository=>object ).
+
+    ro_database_table = NEW cl_xco_asql_ds_database_table(
+      iv_database_table_name    = iv_name
+      iv_with_privileged_access = abap_false
+      io_tool_set               = lo_tool_set
+    ).
+  ENDMETHOD.
+
+
+  METHOD delete_builder.
+    ro_delete_builder = NEW cl_xco_asql_delete_builder( ).
+  ENDMETHOD.
+
+
+  METHOD insert_builder.
+    ro_insert_builder = NEW cl_xco_asql_insert_builder( ).
+  ENDMETHOD.
+
+
+  METHOD internal_table.
+    ro_internal_table = NEW cl_xco_asql_ds_internal_table( |{ iv_name }| ).
+  ENDMETHOD.
+
+
+  METHOD internal_table_ref.
+    ro_internal_table = NEW cl_xco_asql_ds_intrnl_tbl_ref( it_internal_table ).
+  ENDMETHOD.
+
+
+  METHOD modify_builder.
+    ro_modify_builder = NEW cl_xco_asql_modify_builder( ).
+  ENDMETHOD.
+
+
+  METHOD select_builder.
+    IF iv_table IS SUPPLIED.
+      ro_select_builder = NEW cl_xco_asql_old_select_builder( iv_table ).
+    ELSE.
+      ro_select_builder = NEW cl_xco_asql_new_select_builder( ).
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD update_builder.
+    ro_update_builder = NEW cl_xco_asql_update_builder( ).
+  ENDMETHOD.
+ENDCLASS.

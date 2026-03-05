@@ -1,0 +1,70 @@
+*&---------------------------------------------------------------------*
+*& Report ZMENTORING_05_G07_03
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zmentoring_05_g07_03.
+
+TABLES : sbook,scarr.
+
+TYPES: BEGIN OF ty_monthly_stats,
+         carrname        TYPE scarr-carrname,
+         booking_year    type c LENGTH 4,
+         booking_month   TYPE c LENGTH 2,
+         season          TYPE c LENGTH 6,
+         total_bookings  TYPE i,
+         cancelled_cnt   TYPE i,
+       END OF ty_monthly_stats.
+
+DATA: lt_monthly_stats TYPE TABLE OF ty_monthly_stats.
+
+SELECT-OPTIONS : so_fld FOR sbook-fldate.
+
+INITIALIZATION.
+  DATA: lv_start_date TYPE datum.
+
+  lv_start_date(4) = sy-datum(4) - 2.
+  lv_start_date+4(4) = sy-datum+4(4).
+
+  so_fld-sign   = 'I'.
+  so_fld-option = 'BT'.
+  so_fld-low  = lv_start_date.
+  so_fld-high = sy-datum.
+  APPEND so_fld.
+
+START-OF-SELECTION.
+
+  SELECT sc~carrname,
+         substring( sb~order_date, 1, 4 ) AS booking_year,
+         substring( sb~order_date, 5, 2 ) AS booking_month,
+         CASE
+           WHEN substring( sb~order_date, 5, 2 ) BETWEEN '03' AND '05' THEN 'Spring'
+           WHEN substring( sb~order_date, 5, 2 ) BETWEEN '06' AND '08' THEN 'Summer'
+           WHEN substring( sb~order_date, 5, 2 ) BETWEEN '09' AND '11' THEN 'Autumn'
+           ELSE 'Winter'
+         END AS season,
+         COUNT( * ) AS total_bookings,
+         SUM( CASE sb~cancelled
+                WHEN 'X' THEN 1
+                ELSE 0
+              END ) AS cancelled_cnt
+    FROM sbook AS sb JOIN scarr AS sc
+      ON sb~carrid = sc~carrid
+   WHERE sb~order_date in @so_fld
+    GROUP BY sc~carrname,
+             substring( sb~order_date, 1, 4 ),
+             substring( sb~order_date, 5, 2 ),
+             CASE
+               WHEN substring( sb~order_date, 5, 2 ) BETWEEN '03' AND '05' THEN 'Spring'
+               WHEN substring( sb~order_date, 5, 2 ) BETWEEN '06' AND '08' THEN 'Summer'
+               WHEN substring( sb~order_date, 5, 2 ) BETWEEN '09' AND '11' THEN 'Autumn'
+               ELSE 'Winter'
+             END
+    ORDER BY sc~carrname,
+             booking_year,
+             booking_month
+    INTO TABLE @lt_monthly_stats.
+
+  cl_demo_output=>display( lt_monthly_stats ).
+
+* 쿼리문의 실행순서 from -> where -> group by -> having -> select -> order by

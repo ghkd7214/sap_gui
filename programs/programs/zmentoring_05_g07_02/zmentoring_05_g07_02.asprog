@@ -1,0 +1,42 @@
+*&---------------------------------------------------------------------*
+*& Report ZMENTORING_05_G07_02
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zmentoring_05_g07_02.
+
+TYPES: BEGIN OF ty_list,
+         customer_id    TYPE scustom-id,
+         customer_name  TYPE scustom-name,
+         city           TYPE scustom-city,
+         booking_count  TYPE i,
+         loyalty_points TYPE i,
+         avg_luggage    TYPE p LENGTH 8 DECIMALS 2,
+       END OF ty_list.
+
+DATA: lt_list TYPE STANDARD TABLE OF ty_list.
+
+START-OF-SELECTION.
+
+  SELECT sc~id AS customer_id,
+         sc~name AS customer_name,
+         sc~city,
+         COUNT( * ) AS booking_count,
+         SUM( CASE sb~class
+                WHEN 'F' THEN 50
+                WHEN 'C' THEN 30
+                ELSE 10
+              END ) AS loyalty_points,
+         AVG( sb~luggweight AS DEC( 10, 2 ) ) AS avg_luggage
+    FROM scustom AS sc JOIN sbook AS sb
+       ON sc~id = sb~customid
+    GROUP BY sc~id,
+             sc~name,
+             sc~city
+    HAVING COUNT( * ) >= 3
+    ORDER BY loyalty_points DESCENDING,
+             booking_count  DESCENDING
+    INTO TABLE @lt_list.
+
+  " 결과 출력
+  cl_demo_output=>display( lt_list ).

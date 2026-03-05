@@ -1,0 +1,53 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_30_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_30_G07.
+
+TABLES: SSCRFIELDS.
+
+DATA: GV_CHK TYPE C LENGTH 1.
+
+PARAMETERS: PA_CAR TYPE SBOOK-CARRID,
+            PA_CON TYPE SBOOK-CONNID.
+
+PARAMETERS: PA_CHK1 AS CHECKBOX MODIF ID CHG,
+            PA_CHK2 AS CHECKBOX MODIF ID CHG.
+
+SELECT-OPTIONS: SO_COM FOR SSCRFIELDS-UCOMM.
+
+SELECTION-SCREEN SKIP 1.
+SELECTION-SCREEN PUSHBUTTON /POS_LOW(20) GV_BTN USER-COMMAND MODE.
+
+INITIALIZATION.
+  GV_BTN = 'Display/Change'.
+
+AT SELECTION-SCREEN OUTPUT. " PBO
+  IF GV_CHK = 'X'.
+    LOOP AT SCREEN.
+      IF SCREEN-NAME CS 'PA_CAR'.
+        SCREEN-ACTIVE = 0.
+      ENDIF.
+
+      IF SCREEN-NAME CS 'SO_COM'.
+        SCREEN-ACTIVE = 0.
+      ENDIF.
+
+      IF SCREEN-GROUP1 = 'CHG'.
+        SCREEN-ACTIVE = 0.
+      ENDIF.
+
+      MODIFY SCREEN.
+    ENDLOOP.
+  ENDIF.
+
+AT SELECTION-SCREEN.  " PAI
+  CASE SSCRFIELDS-UCOMM.
+    WHEN 'MODE'.
+      IF GV_CHK IS INITIAL.
+        GV_CHK = 'X'.
+      ELSE.
+        CLEAR GV_CHK.
+      ENDIF.
+  ENDCASE.

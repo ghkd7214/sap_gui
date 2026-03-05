@@ -1,0 +1,48 @@
+*&---------------------------------------------------------------------*
+*& Report zquiz_20_g07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zquiz_20_g07.
+
+PARAMETERS : p_date TYPE sy-datum.
+
+DATA: lt_data TYPE TABLE OF ztc1002_07.
+
+INITIALIZATION.
+  p_date = sy-datum.
+
+  " 예약건수 10 미만이면 일반, 적립률 100%
+  " 예약건수 10 이상 30 미만이면 실버, 적립률 110%
+  " 예약건수 30 이상이면 50 미만 골드, 적립률 120%
+  " 예약건수 50 이상이면 70 미만 플래티넘, 적립률 130%
+  " 예약건수 70 이상이면 다이아몬드, 적립률 150%
+
+
+START-OF-SELECTION.
+
+  SELECT customid AS custmid,
+       CASE
+         WHEN COUNT( bookid ) < 10 THEN 'BRZ'
+         WHEN COUNT( bookid ) >= 10 AND COUNT( bookid ) < 30 THEN 'SLV'
+         WHEN COUNT( bookid ) >= 30 AND COUNT( bookid ) < 50 THEN 'GLD'
+         WHEN COUNT( bookid ) >= 50 AND COUNT( bookid ) < 70 THEN 'PLT'
+         WHEN COUNT( bookid ) >= 70 THEN 'DIA'
+       END AS custmlv,
+       CASE
+         WHEN COUNT( bookid ) < 10 THEN 100
+         WHEN COUNT( bookid ) >= 10 AND COUNT( bookid ) < 30 THEN 110
+         WHEN COUNT( bookid ) >= 30 AND COUNT( bookid ) < 50 THEN 120
+         WHEN COUNT( bookid ) >= 50 AND COUNT( bookid ) < 70 THEN 130
+         WHEN COUNT( bookid ) >= 70 THEN 150
+       END AS bonrate
+  FROM sbook
+ WHERE fldate <= @sy-datum
+   AND cancelled <> 'X'
+ GROUP BY customid
+  INTO CORRESPONDING FIELDS OF TABLE @lt_data.
+
+*  cl_demo_output=>display( lt_data ).
+
+  DELETE FROM ztc1002_07.
+  INSERT ztc1002_07 FROM TABLE lt_data.

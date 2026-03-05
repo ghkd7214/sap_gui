@@ -1,0 +1,25 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_49_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_49_G07.
+
+DATA: gt_scarr TYPE TABLE OF ZTSCARR_G07,
+      gs_scarr LIKE LINE OF GT_SCARR.
+
+gs_scarr-CARRID = 'DL'.
+APPEND gs_scarr to GT_SCARR.
+
+gs_scarr-CARRID = 'LH'.
+APPEND gs_scarr to GT_SCARR.
+
+gs_scarr-CARRID = 'UA'.
+APPEND gs_scarr to GT_SCARR.
+
+DELETE ZTSCARR_G07 FROM TABLE GT_SCARR.
+IF SY-SUBRC = 0.
+  MESSAGE 'Success, Data delete' TYPE 'S'.
+ELSE.
+  MESSAGE 'Error, Data delete' TYPE 'E'.
+ENDIF.

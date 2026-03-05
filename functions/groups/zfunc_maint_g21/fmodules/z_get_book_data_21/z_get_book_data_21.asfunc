@@ -1,0 +1,34 @@
+FUNCTION z_get_book_data_21
+  IMPORTING
+    iv_carrid TYPE s_carr_id OPTIONAL
+    iv_connid TYPE s_conn_id OPTIONAL
+    iv_fldate TYPE s_date OPTIONAL
+    iv_bookid TYPE s_book_id OPTIONAL
+  EXPORTING
+    es_booking TYPE zspou03_bookinfo_21.
+
+
+
+
+  SELECT SINGLE
+         sb~customid sc~name AS custname luggweight wunit forcuram forcurkey
+         order_date counter sb~agencynum cancelled
+         sb~custtype smoker class st~name AS agencyname menunumber
+         evalue1 evalue2 evalue3 evalue4 evalue5
+    FROM sbook AS sb INNER JOIN scustom AS sc ON sb~customid = sc~id
+                     LEFT OUTER JOIN stravelag AS st ON sb~agencynum = st~agencynum
+                     LEFT OUTER JOIN ztmenureq_g21 AS zt ON sb~carrid = zt~carrid
+                                                        AND sb~connid = zt~connid
+                                                        AND sb~fldate = zt~fldate
+                                                        AND sb~bookid = zt~bookid
+                     LEFT OUTER JOIN ztsurvey_21 AS zts ON sb~carrid = zts~carrid
+                                                       AND sb~connid = zts~connid
+                                                       AND sb~fldate = zts~fldate
+                                                       AND sb~bookid = zts~bookid
+    INTO CORRESPONDING FIELDS OF es_booking
+    WHERE sb~carrid = iv_carrid
+      AND sb~connid = iv_connid
+      AND sb~fldate = iv_fldate
+      AND sb~bookid = iv_bookid.
+
+ENDFUNCTION.

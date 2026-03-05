@@ -1,0 +1,81 @@
+*&---------------------------------------------------------------------*
+*& Include          SAPMZABAP2_G07_POU_02I01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0110  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0110 INPUT.
+  CASE ok_code.
+    WHEN 'OKAY'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  EXIT  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE exit INPUT.
+  CASE ok_code.
+    WHEN 'CANC'.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0100  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0100 INPUT.
+  CASE ok_code.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'SEARCH'.
+      gv_subsc = '0101'.
+      gv_tab = 'FC1'.
+
+    WHEN 'FC1' OR 'FC2' OR 'FC3' OR 'FC4'.
+      tabstrip-activetab = ok_code.
+
+    WHEN 'MENU'.
+      CALL SCREEN 110
+        STARTING AT 1 10.
+
+    WHEN 'LIST'.
+      gv_mode = 'L'.
+
+      CLEAR zspou03_survey_info_21.
+
+      PERFORM get_data_200.
+
+      CALL SCREEN 200.
+
+    WHEN 'SURVEY'.
+      gv_mode = 'S'.
+
+      CLEAR zspou03_survey_info_21.
+
+      zspou03_survey_info_21-svydate = sy-datum.
+
+      CALL SCREEN 200.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0200  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0200 INPUT.
+  CASE ok_code.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'SAVE'.
+      PERFORM update_db USING zspou03_survey_info_21.
+  ENDCASE.
+ENDMODULE.

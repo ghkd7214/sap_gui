@@ -1,0 +1,12 @@
+*&---------------------------------------------------------------------*
+*& Module Pool      sapmzabap2_g07_pou_03
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+PROGRAM sapmzabap2_g07_pou_03.
+
+INCLUDE sapmzabap2_g07_pou_02top                .  " Global Data
+INCLUDE sapmzabap2_g07_pou_02c01                .
+INCLUDE sapmzabap2_g07_pou_02o01                .  " PBO-Modules
+INCLUDE sapmzabap2_g07_pou_02i01                .  " PAI-Modules
+INCLUDE sapmzabap2_g07_pou_02f01                .  " FORM-Routines

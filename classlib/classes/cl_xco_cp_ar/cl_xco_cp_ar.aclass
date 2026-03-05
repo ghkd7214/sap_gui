@@ -1,0 +1,58 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO CP ABAP Repository: Internal API
+"! </p>
+"!
+"! Internal API for package S_XCO_CP_ABAP_REPOSITORY.
+CLASS cl_xco_cp_ar DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      object     TYPE REF TO if_xco_ar_object_factory READ-ONLY,
+
+      package    TYPE REF TO cl_xco_cp_package_factory READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+
+  PRIVATE SECTION.
+    CLASS-METHODS:
+      set_object,
+
+      set_package.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_CP_AR IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    set_object( ).
+    set_package( ).
+  ENDMETHOD.
+
+
+  METHOD set_object.
+    DATA(lo_tool_set) = NEW cl_xco_ar_object_tool_set(
+      io_cts_object = xco_cts=>object
+      io_tadir      = xco_system=>tadir
+    ).
+
+    object = NEW cl_xco_cp_ar_object_factory( lo_tool_set ).
+  ENDMETHOD.
+
+
+  METHOD set_package.
+    DATA(lo_tool_set) = NEW cl_xco_pkg_tool_set(
+      io_tadir                   = xco_system=>tadir
+      io_abap_repository_object  = object
+      io_cts_object              = xco_cts=>object
+      io_scts_request_selection  = cl_xco_dep_fg_scts_request_sel=>instance
+      io_strd                    = cl_xco_dep_fg_strd=>instance
+      io_stmg                    = cl_xco_dep_fg_stmg=>instance
+      io_application_component   = xco_system=>application_component
+      io_software_component      = xco_system=>software_component
+    ).
+
+    package = NEW cl_xco_cp_package_factory( lo_tool_set ).
+  ENDMETHOD.
+ENDCLASS.

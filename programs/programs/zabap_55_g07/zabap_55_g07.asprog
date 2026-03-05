@@ -1,0 +1,34 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_55_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_55_G07.
+
+DATA: GR_TAB TYPE REF TO DATA.
+
+FIELD-SYMBOLS: <FS_ITAB> TYPE ANY TABLE.
+
+PARAMETERS: PA_TABNM TYPE DD02L-TABNAME,
+            PA_ROW   TYPE I DEFAULT 200.
+
+AT SELECTION-SCREEN.
+  SELECT COUNT( * )
+    FROM DD02L
+    WHERE TABNAME = PA_TABNM.
+
+  IF SY-SUBRC <> 0.
+    MESSAGE '존재하지 않는 테이블입니다.' TYPE 'E'.
+  ENDIF.
+
+START-OF-SELECTION.
+
+  CREATE DATA GR_TAB TYPE TABLE OF (PA_TABNM).
+  ASSIGN GR_TAB->* TO <FS_ITAB>.
+
+  SELECT *
+    INTO TABLE <FS_ITAB>
+    UP TO PA_ROW ROWS
+    FROM (PA_TABNM).
+
+  CL_DEMO_OUTPUT=>DISPLAY( <FS_ITAB> ).

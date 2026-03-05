@@ -1,0 +1,19 @@
+*&---------------------------------------------------------------------*
+*& Include ZQUIZ_21_G07TOP                          - Module Pool      ZQUIZ_22_G07
+*&---------------------------------------------------------------------*
+PROGRAM zquiz_22_g07.
+
+tables: ZSQUIZ22_G07.
+
+DATA : ok_code TYPE sy-ucomm.
+
+DATA : gs_list TYPE sflight,
+       gt_list TYPE TABLE OF sflight.
+
+DATA : go_cont TYPE REF TO cl_gui_custom_container,
+       go_alv  TYPE REF TO cl_gui_alv_grid.
+
+DATA : gt_fcat TYPE lvc_t_fcat,
+       gs_fcat TYPE lvc_s_fcat.
+
+DATA : gs_layout TYPE lvc_s_layo.

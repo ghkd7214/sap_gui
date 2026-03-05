@@ -1,0 +1,73 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo.typeNamePlural: 'Customers'
+@UI.headerInfo.typeName: 'Customer'
+@UI.headerInfo.title.value: 'Id'
+@UI.headerInfo.description.value: 'Name'
+
+annotate view zcds_cust_g07
+    with    
+{
+    @UI.facet: [
+        { type: #IDENTIFICATION_REFERENCE, position: 10, label: 'Genernal Info' },
+        
+        { id: 'COLFACT1', type: #COLLECTION, position: 20, label: 'Additional Info' },
+        { parentId: 'COLFACT1', type: #FIELDGROUP_REFERENCE, label: 'Address Info',
+          targetQualifier: 'ADDR', position: 10 },
+        { parentId: 'COLFACT1', type: #FIELDGROUP_REFERENCE, label: 'Contact Info',
+          targetQualifier: 'CONT', position: 20 },  
+          
+        { type: #LINEITEM_REFERENCE, targetElement: '_Booking', label: 'Booing Info',
+          position: 30 },
+        
+        { type: #CHART_REFERENCE, targetElement: '_Chart', label: 'Chart', position: 40 }  
+//        { type: #FIELDGROUP_REFERENCE, position: 10, targetQualifier: 'ADDR', 
+//          label: 'Address Info', purpose: #HEADER },
+//          
+//        { type: #FIELDGROUP_REFERENCE, position: 20, targetQualifier: 'CONT', 
+//          label: 'Contact Info', purpose: #HEADER } 
+    ]
+    
+    @UI.lineItem: [{ position: 10 }]
+    @UI.identification: [{ position: 10 }]
+    Id;
+    @UI.lineItem: [{ position: 20 }]
+    @UI.identification: [{ position: 20 }]
+    Name;
+    @UI.lineItem: [{ position: 30 }]
+    @UI.identification: [{ position: 30 }]
+    Form;
+    @UI.lineItem: [{ position: 40 }]
+//    @UI.identification: [{ position: 40 }]
+    @UI.fieldGroup: [{ qualifier: 'ADDR', position: 10 }]
+    Street;
+    @UI.lineItem: [{ position: 50 }]
+//    @UI.identification: [{ position: 50 }]
+    @UI.fieldGroup: [{ qualifier: 'ADDR', position: 20 }]
+    Postbox;
+    @UI.lineItem: [{ position: 60 }]
+//    @UI.identification: [{ position: 60 }]
+    @UI.fieldGroup: [{ qualifier: 'ADDR', position: 30 }]
+    Postcode;
+    @UI.lineItem: [{ position: 70 }]
+//    @UI.identification: [{ position: 70 }]
+    @UI.fieldGroup: [{ qualifier: 'ADDR', position: 40 }]
+    City;
+    @UI.lineItem: [{ position: 80 }]
+//    @UI.identification: [{ position: 80 }]
+    @UI.fieldGroup: [{ qualifier: 'ADDR', position: 50 }]
+    Country;
+    @UI.lineItem: [{ position: 90 }]
+//    @UI.identification: [{ position: 90 }]
+    @UI.fieldGroup: [{ qualifier: 'CONT', position: 10 }]
+    Telephone;
+    @UI.lineItem: [{ position: 100 }]
+//    @UI.identification: [{ position: 100 }]
+    @UI.fieldGroup: [{ qualifier: 'CONT', position: 20 }]
+    Custtype;
+    @UI.lineItem: [{ position: 110, type: #AS_DATAPOINT }]
+//    @UI.dataPoint: { targetValue: 5, visualization: #RATING }
+    @UI.dataPoint: { targetValue: 100, visualization: #PROGRESS }
+//    @UI.identification: [{ position: 110 }]
+    @UI.fieldGroup: [{ qualifier: 'CONT', position: 30 }]
+    Discount;
+}

@@ -1,0 +1,44 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_52_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_52_G07.
+
+* Internal table.
+DATA: GT_SCARR   TYPE TABLE OF SCARR,
+      GT_SPFLI   TYPE TABLE OF SPFLI,
+      GT_SFLIGHT TYPE TABLE OF SFLIGHT,
+      GT_SCUSTOM TYPE TABLE OF SCUSTOM,
+      GT_SBOOK   TYPE TABLE OF SBOOK.
+
+* 변수를 포인터할 수 있는 변수.
+FIELD-SYMBOLS <FS_TAB> TYPE ANY TABLE.
+
+* selection screen.
+PARAMETERS: PA_TABNM TYPE DD02L-TABNAME,
+            PA_ROW   TYPE I DEFAULT 200.
+
+CASE PA_TABNM.
+  WHEN 'SCARR'.
+*   Field symbol이 변수를 포인터 함.
+    ASSIGN GT_SCARR TO <FS_TAB>.
+  WHEN 'SPFLI'.
+    ASSIGN GT_SPFLI TO <FS_TAB>.
+  WHEN 'SFLIGHT'.
+    ASSIGN GT_SFLIGHT TO <FS_TAB>.
+  WHEN 'SBOOK'.
+    ASSIGN GT_SBOOK TO <FS_TAB>.
+  WHEN 'SCUSTOM'.
+    ASSIGN GT_SCUSTOM TO <FS_TAB>.
+ENDCASE.
+
+* Fiedl symbol이 변수를 포인터 하고 있는 경우.
+IF <FS_TAB> IS ASSIGNED.
+  SELECT *
+    INTO TABLE <FS_TAB>
+    UP TO PA_ROW ROWS
+    FROM (PA_TABNM).  "변수에 DB table이름을 할당해 해당 테이블에서 data read.
+
+  CL_DEMO_OUTPUT=>DISPLAY( <FS_TAB> ).
+ENDIF.

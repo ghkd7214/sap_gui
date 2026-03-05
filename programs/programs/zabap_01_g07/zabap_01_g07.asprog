@@ -1,0 +1,35 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_01_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap_01_g07.
+
+* selection screen 번호 1000 생성 및 input 필터 생성.
+PARAMETERS pa_num TYPE i.
+
+* 변수 네이밍 규칙
+* 변수이름 첫자는  g or l      글로벌, 로컬
+* 두번째 자는    v or s or t  밸류, 스트럭쳐, 테이블
+
+* 변수선언.
+DATA gv_result TYPE i.
+
+* pa_num 값을 gv_result에 할당
+MOVE pa_num TO gv_result.
+
+* 더하기 1, 더하기 2
+ADD 1 TO gv_result. ADD 2 TO gv_result.
+
+* WRITE 'Your Input : '.
+* WRITE PA_num.
+* 위로 똑같은 결과(Chained statement)
+WRITE: 'Your Input : '(xyz), pa_num.
+
+* 다음줄(새로운 라인)
+NEW-LINE.
+
+* WRITE 'Result : '.
+* WRITE GV_RESULT.
+WRITE TEXT-010.
+WRITE gv_result.

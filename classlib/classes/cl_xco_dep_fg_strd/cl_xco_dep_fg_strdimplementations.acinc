@@ -1,0 +1,414 @@
+CLASS lcl_tr_append_to_comm DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          pi_korrnum            TYPE REF TO e070-trkorr
+          wi_e071               TYPE REF TO e071
+          wi_simulation         TYPE REF TO trpari-w_simulat
+          wi_suppress_key_check TYPE REF TO trpari-w_no_check
+          wt_e071k              TYPE REF TO if_xco_dep_fg_strd=>tt_e071k.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      pi_korrnum            TYPE REF TO e070-trkorr,
+      wi_e071               TYPE REF TO e071,
+      wi_simulation         TYPE REF TO trpari-w_simulat,
+      wi_suppress_key_check TYPE REF TO trpari-w_no_check,
+
+      wt_e071k              TYPE REF TO if_xco_dep_fg_strd=>tt_e071k.
+ENDCLASS.
+
+CLASS lcl_tr_append_to_comm IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->pi_korrnum = pi_korrnum.
+    me->wi_e071 = wi_e071.
+    me->wi_simulation = wi_simulation.
+    me->wi_suppress_key_check = wi_suppress_key_check.
+
+    me->wt_e071k = wt_e071k.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_APPEND_TO_COMM'
+      EXPORTING
+        pi_korrnum                     = pi_korrnum->*
+        wi_e071                        = wi_e071->*
+        wi_simulation                  = wi_simulation->*
+        wi_suppress_key_check          = wi_suppress_key_check->*
+      TABLES
+        wt_e071k                       = wt_e071k->*
+      EXCEPTIONS
+        no_authorization               = 1
+        no_systemname                  = 2
+        no_systemtype                  = 3
+        tr_check_keysyntax_error       = 4
+        tr_check_obj_error             = 5
+        tr_enqueue_failed              = 6
+        tr_ill_korrnum                 = 7
+        tr_key_without_header          = 8
+        tr_lockmod_failed              = 9
+        tr_lock_enqueue_failed         = 10
+        tr_modif_only_in_modif_order   = 11
+        tr_not_owner                   = 12
+        tr_no_append_of_corr_entry     = 13
+        tr_no_append_of_c_member       = 14
+        tr_no_shared_repairs           = 15
+        tr_order_not_exist             = 16
+        tr_order_released              = 17
+        tr_order_update_error          = 18
+        tr_repair_only_in_repair_order = 19
+        tr_wrong_order_type            = 20
+        wrong_client                   = 21
+        OTHERS                         = 22.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_append_to_comm.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ pi_korrnum->* },{ wi_simulation->* },{ wi_suppress_key_check->* })|.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_tr_devclass_get DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          iv_devclass TYPE REF TO tdevc-devclass
+          es_tdevc    TYPE REF TO tdevc.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      iv_devclass TYPE REF TO tdevc-devclass,
+
+      es_tdevc    TYPE REF TO tdevc.
+ENDCLASS.
+
+CLASS lcl_tr_devclass_get IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->iv_devclass = iv_devclass.
+
+    me->es_tdevc = es_tdevc.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_DEVCLASS_GET'
+      EXPORTING
+        iv_devclass        = iv_devclass->*
+      IMPORTING
+        es_tdevc           = es_tdevc->*
+      EXCEPTIONS
+        devclass_not_found = 1
+        OTHERS             = 2.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_devclass_get.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ iv_devclass->* })|.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_tr_insert_new_comm DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          wi_kurztext      TYPE REF TO e07t-as4text
+          wi_trfunction    TYPE REF TO e070-trfunction
+          wi_strkorr       TYPE REF TO e070-strkorr
+          wi_category      TYPE REF TO e070-korrdev
+          iv_tarsystem     TYPE REF TO e070-tarsystem
+          wi_client        TYPE REF TO e070c-client
+          wi_target_client TYPE REF TO e070c-tarclient
+          iv_tardevcl      TYPE REF TO e070m-tardevcl
+          iv_devclass      TYPE REF TO e070m-devclass
+          iv_tarlayer      TYPE REF TO e070m-tarlayer
+          wi_protect       TYPE REF TO trpari-s_lockflag
+          iv_simulation    TYPE REF TO trpari-w_simulat
+          we_trkorr        TYPE REF TO e070-trkorr
+          we_e070          TYPE REF TO e070
+          we_e07t          TYPE REF TO e07t
+          we_e070c         TYPE REF TO e070c
+          es_e070m         TYPE REF TO e070m.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      wi_kurztext      TYPE REF TO e07t-as4text,
+      wi_trfunction    TYPE REF TO e070-trfunction,
+      wi_strkorr       TYPE REF TO e070-strkorr,
+      wi_category      TYPE REF TO e070-korrdev,
+      iv_tarsystem     TYPE REF TO e070-tarsystem,
+      wi_client        TYPE REF TO e070c-client,
+      wi_target_client TYPE REF TO e070c-tarclient,
+      iv_tardevcl      TYPE REF TO e070m-tardevcl,
+      iv_devclass      TYPE REF TO e070m-devclass,
+      iv_tarlayer      TYPE REF TO e070m-tarlayer,
+      wi_protect       TYPE REF TO trpari-s_lockflag,
+      iv_simulation    TYPE REF TO trpari-w_simulat,
+
+      we_trkorr        TYPE REF TO e070-trkorr,
+      we_e070          TYPE REF TO e070,
+      we_e07t          TYPE REF TO e07t,
+      we_e070c         TYPE REF TO e070c,
+      es_e070m         TYPE REF TO e070m.
+ENDCLASS.
+
+CLASS lcl_tr_insert_new_comm IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->wi_kurztext = wi_kurztext.
+    me->wi_trfunction = wi_trfunction.
+    me->wi_strkorr = wi_strkorr.
+    me->wi_category = wi_category.
+    me->iv_tarsystem = iv_tarsystem.
+    me->wi_client = wi_client.
+    me->wi_target_client = wi_target_client.
+    me->iv_tardevcl = iv_tardevcl.
+    me->iv_devclass = iv_devclass.
+    me->iv_tarlayer = iv_tarlayer.
+    me->wi_protect = wi_protect.
+    me->iv_simulation = iv_simulation.
+
+    me->we_trkorr = we_trkorr.
+    me->we_e070 = we_e070.
+    me->we_e07t = we_e07t.
+    me->we_e070c = we_e070c.
+    me->es_e070m = es_e070m.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_INSERT_NEW_COMM'
+      EXPORTING
+        wi_kurztext             = wi_kurztext->*
+        wi_trfunction           = wi_trfunction->*
+        wi_strkorr              = wi_strkorr->*
+        wi_category             = wi_category->*
+        iv_tarsystem            = iv_tarsystem->*
+        wi_client               = wi_client->*
+        wi_target_client        = wi_target_client->*
+        iv_tardevcl             = iv_tardevcl->*
+        iv_devclass             = iv_devclass->*
+        iv_tarlayer             = iv_tarlayer->*
+        wi_protect              = wi_protect->*
+        iv_simulation           = iv_simulation->*
+      IMPORTING
+        we_trkorr               = we_trkorr->*
+        we_e070                 = we_e070->*
+        we_e07t                 = we_e07t->*
+        we_e070c                = we_e070c->*
+        es_e070m                = es_e070m->*
+      EXCEPTIONS
+        client_range_full       = 1
+        e070l_insert_error      = 2
+        e070l_update_error      = 3
+        e070_insert_error       = 4
+        e07t_insert_error       = 5
+        e070c_insert_error      = 6
+        e070m_insert_error      = 7
+        no_systemname           = 8
+        no_systemtype           = 9
+        sap_range_full          = 10
+        unallowed_trfunction    = 11
+        unallowed_user          = 12
+        order_not_found         = 13
+        invalid_targetsystem    = 14
+        invalid_target_devclass = 15
+        invalid_devclass        = 16
+        invalid_target_layer    = 17
+        invalid_status          = 18
+        not_an_order            = 19
+        order_lock_failed       = 20
+        no_authorization        = 21
+        wrong_client            = 22
+        file_access_error       = 23
+        wrong_category          = 24
+        internal_error          = 25
+        OTHERS                  = 26.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_insert_new_comm.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ wi_kurztext->* },{ wi_trfunction->* },{ wi_strkorr->* },{ wi_category->* },|
+      && |{ iv_tarsystem->* },{ wi_client->* },{ wi_target_client->* },{ iv_tardevcl->* },|
+      && |{ iv_devclass->* },{ iv_tarlayer->* },{ wi_protect->* },{ iv_simulation->* })|.
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_tr_tadir_interface DEFINITION FINAL
+    INHERITING FROM cl_xco_dep_fm_call_abstract CREATE PUBLIC.
+  PUBLIC SECTION.
+    METHODS:
+      constructor
+        IMPORTING
+          wi_delete_tadir_entry TYPE REF TO trpari-s_checked
+          wi_test_modus         TYPE REF TO trpari-s_checked
+          wi_tadir_pgmid        TYPE REF TO tadir-pgmid
+          wi_tadir_object       TYPE REF TO tadir-object
+          wi_tadir_obj_name     TYPE REF TO tadir-obj_name
+          wi_tadir_devclass     TYPE REF TO tadir-devclass
+          wi_tadir_masterlang   TYPE REF TO tadir-masterlang
+          wi_tadir_cproject     TYPE REF TO tadir-cproject
+          wi_remove_genflag     TYPE REF TO trpari-s_checked
+          wi_set_genflag        TYPE REF TO tadir-genflag
+          wi_read_only          TYPE REF TO trpari-s_checked
+          iv_set_edtflag        TYPE REF TO tadir-edtflag
+          iv_delflag            TYPE REF TO tadir-delflag
+          new_tadir_entry       TYPE REF TO tadir.
+
+  PROTECTED SECTION.
+    METHODS:
+      execute REDEFINITION,
+
+      get_function_module_name REDEFINITION,
+
+      get_parameter_values REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA:
+      wi_delete_tadir_entry TYPE REF TO trpari-s_checked,
+      wi_test_modus         TYPE REF TO trpari-s_checked,
+      wi_tadir_pgmid        TYPE REF TO tadir-pgmid,
+      wi_tadir_object       TYPE REF TO tadir-object,
+      wi_tadir_obj_name     TYPE REF TO tadir-obj_name,
+      wi_tadir_devclass     TYPE REF TO tadir-devclass,
+      wi_tadir_masterlang   TYPE REF TO tadir-masterlang,
+      wi_tadir_cproject     TYPE REF TO tadir-cproject,
+      wi_remove_genflag     TYPE REF TO trpari-s_checked,
+      wi_set_genflag        TYPE REF TO tadir-genflag,
+      wi_read_only          TYPE REF TO trpari-s_checked,
+      iv_set_edtflag        TYPE REF TO tadir-edtflag,
+      iv_delflag            TYPE REF TO tadir-delflag,
+
+      new_tadir_entry       TYPE REF TO tadir.
+ENDCLASS.
+
+CLASS lcl_tr_tadir_interface IMPLEMENTATION.
+  METHOD constructor.
+    super->constructor( ).
+
+    me->wi_delete_tadir_entry = wi_delete_tadir_entry.
+    me->wi_test_modus = wi_test_modus.
+    me->wi_tadir_pgmid = wi_tadir_pgmid.
+    me->wi_tadir_object = wi_tadir_object.
+    me->wi_tadir_obj_name = wi_tadir_obj_name.
+    me->wi_tadir_devclass = wi_tadir_devclass.
+    me->wi_tadir_masterlang = wi_tadir_masterlang.
+    me->wi_tadir_cproject = wi_tadir_cproject.
+    me->wi_remove_genflag = wi_remove_genflag.
+    me->wi_set_genflag = wi_set_genflag.
+    me->wi_read_only = wi_read_only.
+    me->iv_set_edtflag = iv_set_edtflag.
+    me->iv_delflag = iv_delflag.
+
+    me->new_tadir_entry = new_tadir_entry.
+  ENDMETHOD.
+
+  METHOD execute.
+    CALL FUNCTION 'TR_TADIR_INTERFACE'
+      EXPORTING
+        wi_delete_tadir_entry          = wi_delete_tadir_entry->*
+        wi_test_modus                  = wi_test_modus->*
+        wi_tadir_pgmid                 = wi_tadir_pgmid->*
+        wi_tadir_object                = wi_tadir_object->*
+        wi_tadir_obj_name              = wi_tadir_obj_name->*
+        wi_tadir_devclass              = wi_tadir_devclass->*
+        wi_tadir_masterlang            = wi_tadir_masterlang->*
+        wi_tadir_cproject              = wi_tadir_cproject->*
+        wi_remove_genflag              = wi_remove_genflag->*
+        wi_set_genflag                 = wi_set_genflag->*
+        wi_read_only                   = wi_read_only->*
+        iv_set_edtflag                 = iv_set_edtflag->*
+        iv_delflag                     = iv_delflag->*
+      IMPORTING
+        new_tadir_entry                = new_tadir_entry->*
+      EXCEPTIONS
+        tadir_entry_not_existing       = 1
+        tadir_entry_ill_type           = 2
+        no_systemname                  = 3
+        no_systemtype                  = 4
+        original_system_conflict       = 5
+        object_reserved_for_devclass   = 6
+        object_exists_global           = 7
+        object_exists_local            = 8
+        object_is_distributed          = 9
+        obj_specification_not_unique   = 10
+        no_authorization_to_delete     = 11
+        devclass_not_existing          = 12
+        simultanious_set_remove_repair = 13
+        order_missing                  = 14
+        no_modification_of_head_syst   = 15
+        pgmid_object_not_allowed       = 16
+        masterlanguage_not_specified   = 17
+        devclass_not_specified         = 18
+        specify_owner_unique           = 19
+        loc_priv_objs_no_repair        = 20
+        gtadir_not_reached             = 21
+        object_locked_for_order        = 22
+        change_of_class_not_allowed    = 23
+        no_change_from_sap_to_tmp      = 24
+        OTHERS                         = 25.
+
+    ev_return_code = sy-subrc.
+    eo_message = xco=>sy->message( ).
+  ENDMETHOD.
+
+  METHOD get_function_module_name.
+    rv_function_module_name = if_xco_dep_constants=>co_function_module-tr_tadir_interface.
+  ENDMETHOD.
+
+  METHOD get_parameter_values.
+    rv_parameter_values = |({ wi_delete_tadir_entry->* },{ wi_test_modus->* },{ wi_tadir_pgmid->* },|
+      && |{ wi_tadir_object->* },{ wi_tadir_obj_name->* },{ wi_tadir_devclass->* },{ wi_remove_genflag->* },|
+      && |{ wi_set_genflag->* },{ wi_read_only->* },{ iv_set_edtflag->* },{ iv_delflag->* })|.
+  ENDMETHOD.
+ENDCLASS.

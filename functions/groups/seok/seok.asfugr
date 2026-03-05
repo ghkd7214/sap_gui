@@ -1,0 +1,33 @@
+*******************************************************************
+*   System-defined Include-files.                                 *
+*******************************************************************
+INCLUDE LSEOKTOP.                          " Global Data
+INCLUDE LSEOKUXX.                          " Function Modules
+
+*******************************************************************
+*   User-defined Include-files (if necessary).                    *
+*******************************************************************
+* INCLUDE LSEOKF...                          " Subprograms
+* INCLUDE LSEOKO...                          " PBO-Modules
+* INCLUDE LSEOKI...                          " PAI-Modules
+
+INCLUDE:
+
+  LSEOKF00,
+  LSEOKUIR,
+  LSEOKFCI,
+  LSEOKFCO,
+  LSEOKFSC,
+  LSEOKFMR,
+  LSEOKFIR,
+  LSEOKFFR,
+  LSEOKFTT,
+  LSEOKFFF,
+  LSEOKFDC,
+  LSEOKREF.
+
+INCLUDE LSEOKMOD.
+
+INCLUDE LSEOKP01.
+
+INCLUDE LSEOKT99.

@@ -1,0 +1,82 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_31_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zabap_31_g07.
+
+INCLUDE zabap_31_g07_top.
+INCLUDE zabap_31_g07_c01.
+INCLUDE zabap_31_g07_o01.
+INCLUDE zabap_31_g07_i01.
+INCLUDE zabap_31_g07_f01.
+
+INITIALIZATION.
+  so_car-sign   = 'I'.
+  so_car-option = 'BT'.
+  so_car-low    = 'AA'.
+  so_car-high   = 'LH'.
+  APPEND so_car.
+
+START-OF-SELECTION.
+
+  SELECT *
+    INTO CORRESPONDING FIELDS OF TABLE gt_data
+    FROM sbook
+   WHERE carrid IN so_car
+     AND connid IN so_con
+     AND fldate IN so_fdt.
+
+  LOOP AT gt_data INTO gs_data.
+
+    SELECT SINGLE name telephone
+      INTO (gs_data-name, gs_data-phone)
+      FROM scustom
+      WHERE id = gs_data-customid.
+
+    IF gs_data-cancelled = 'X'.
+      gs_data-canc_icon = icon_cancel.
+    ENDIF.
+
+    IF gs_data-invoice = 'X'.
+      gs_col-fname = 'INVOICE'.
+      gs_col-color-col = 7.
+      gs_col-color-int = 1.
+      gs_col-color-inv = 0.
+      APPEND gs_col TO gs_data-itab_col.
+
+      gs_data-btn_txt = 'Invoice check'.
+
+      gs_celbtn-fieldname = 'BTN_TXT'.
+      gs_celbtn-style = cl_gui_alv_grid=>mc_style_button.
+      APPEND gs_celbtn TO gs_data-cel_btn.
+
+    ENDIF.
+
+    IF gs_data-class = 'F'.
+      gs_col-fname = 'CLASS'.
+      gs_col-color-col = 5.
+      gs_col-color-int = 1.
+      gs_col-color-inv = 0.
+      APPEND gs_col TO gs_data-itab_col.
+    ENDIF.
+
+    IF gs_data-luggweight <= 10.
+      gs_data-excp = '3'.
+    ELSEIF gs_data-luggweight > 10 AND gs_data-luggweight <= 20.
+      gs_data-excp = '2'.
+    ELSE.
+      gs_data-excp = '1'.
+    ENDIF.
+
+    IF gs_data-smoker = 'X'.
+*     gs_data-rowcol = 'C' && col_negative && '10'.
+      gs_data-rowcol = 'C610'.
+    ENDIF.
+
+    MODIFY gt_data FROM gs_data.
+    CLEAR gs_data.
+
+  ENDLOOP.
+
+  CALL SCREEN 100.

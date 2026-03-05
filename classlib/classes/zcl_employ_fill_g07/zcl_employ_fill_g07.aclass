@@ -1,0 +1,26 @@
+CLASS zcl_employ_fill_g07 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS zcl_employ_fill_g07 IMPLEMENTATION.
+  METHOD if_oo_adt_classrun~main.
+    DATA: lt_employ TYPE TABLE OF zg07_employ.
+
+    SELECT *
+      INTO CORRESPONDING FIELDS OF TABLE lt_employ
+      FROM /lrn/employ_dep.
+
+    DELETE FROM zg07_employ.
+    INSERT zg07_employ FROM TABLE lt_employ.
+    out->write( 'success' ).
+  ENDMETHOD.
+ENDCLASS.
+
+

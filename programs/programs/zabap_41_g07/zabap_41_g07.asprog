@@ -1,0 +1,33 @@
+*&---------------------------------------------------------------------*
+*& Report ZABAP_41_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT ZABAP_41_G07.
+
+DATA: GT_CONNECT TYPE TABLE OF SPFLI,
+      GS_CONNECT LIKE LINE OF GT_CONNECT.
+
+SELECT-OPTIONS: SO_CAR FOR GS_CONNECT-CARRID.
+
+SELECT *
+  INTO TABLE GT_CONNECT
+  FROM SPFLI
+  WHERE CARRID IN SO_CAR.
+
+* ABAP Memory에 데이터 저장.
+EXPORT
+  GT_CONNECT
+  TO MEMORY ID 'CONECT'.
+
+SUBMIT ZABAP_42_G07
+  AND RETURN.
+
+LOOP AT GT_CONNECT INTO GS_CONNECT.
+  WRITE:/ GS_CONNECT-CARRID,
+          GS_CONNECT-CONNID,
+          GS_CONNECT-AIRPFROM,
+          GS_CONNECT-CITYFROM,
+          GS_CONNECT-AIRPTO,
+          GS_CONNECT-CITYTO.
+ENDLOOP.

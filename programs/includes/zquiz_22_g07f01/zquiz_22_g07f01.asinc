@@ -1,0 +1,201 @@
+*&---------------------------------------------------------------------*
+*& Include zquiz_22_g07f01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form get_data
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM get_data .
+  RANGES: lr_carrid FOR sflight-carrid,
+          lr_connid FOR sflight-connid,
+          lr_fldate FOR sflight-fldate.
+
+  DATA: lv_days_low  TYPE i,
+        lv_days_high TYPE i.
+
+  CLEAR : lr_carrid, lr_connid, lr_fldate.
+
+  IF zsquiz22_g07-carrid IS NOT INITIAL.
+    lr_carrid-sign   = 'I'.
+    lr_carrid-option = 'EQ'.
+    lr_carrid-low    = zsquiz22_g07-carrid.
+    APPEND lr_carrid.
+  ENDIF.
+
+  IF zsquiz22_g07-connid IS NOT INITIAL.
+    lr_connid-sign   = 'I'.
+    lr_connid-option = 'EQ'.
+    lr_connid-low    = zsquiz22_g07-connid.
+    APPEND lr_connid.
+  ENDIF.
+
+  IF zsquiz22_g07-promotion IS NOT INITIAL.
+    CLEAR: lv_days_low, lv_days_high.
+
+    CASE zsquiz22_g07-promotion.
+      WHEN '60'.
+        lv_days_low = 1.  lv_days_high = 7.   " 1주 후
+      WHEN '50'.
+        lv_days_low = 8.  lv_days_high = 14.  " 2주 후
+      WHEN '40'.
+        lv_days_low = 15. lv_days_high = 21.  " 3주 후
+      WHEN '30'.
+        lv_days_low = 22. lv_days_high = 28.  " 4주 후
+      WHEN '20'.
+        lv_days_low = 29. lv_days_high = 35.  " 5주 후
+      WHEN '10'.
+        lv_days_low = 36. lv_days_high = 42.  " 6주 후
+    ENDCASE.
+
+    IF lv_days_high > 0.
+      lr_fldate-sign   = 'I'.
+      lr_fldate-option = 'BT'.
+      lr_fldate-low    = sy-datum + lv_days_low.
+      lr_fldate-high   = sy-datum + lv_days_high.
+      APPEND lr_fldate.
+    ENDIF.
+
+  ENDIF.
+
+  SELECT carrid,
+         connid,
+         fldate,
+         price,
+         currency,
+         seatsmax,
+         seatsocc,
+         seatsmax_b,
+         seatsmax_f,
+         seatsocc_b,
+         seatsocc_f
+    FROM sflight
+   WHERE carrid IN @lr_carrid
+     AND connid IN @lr_connid
+     AND fldate IN @lr_fldate
+    INTO CORRESPONDING FIELDS OF TABLE @gt_list.
+
+  IF sy-subrc = 0.
+
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form create_cont
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM create_cont .
+  CREATE OBJECT go_cont
+    EXPORTING
+      container_name              = 'AREA'
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CREATE OBJECT go_alv
+    EXPORTING
+      i_parent          = go_cont
+    EXCEPTIONS
+      error_cntl_create = 1
+      error_cntl_init   = 2
+      error_cntl_link   = 3
+      error_dp_create   = 4
+      OTHERS            = 5.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  PERFORM set_fcat.
+  PERFORM set_layout.
+
+  CALL METHOD go_alv->set_table_for_first_display
+    EXPORTING
+      i_structure_name              = 'SFLIGHT'
+      is_layout                     = gs_layout
+    CHANGING
+      it_outtab                     = gt_list
+      it_fieldcatalog               = gt_fcat
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*     Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_fcat1
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_fcat .
+  DEFINE _add_fcat.
+    CLEAR gs_fcat.
+    gs_fcat-fieldname = &1. " 필드명
+    gs_fcat-ref_table = &2. " 참조 테이블
+    gs_fcat-ref_field = &3. " 참조 필드
+    gs_fcat-coltext   = &4. " 컬럼명
+
+    " 확장성 때문에 적어둠 지금은 의미없음
+    CASE &1.
+      WHEN 'PLANETYPE' OR 'PAYMENTSUM'.
+        gs_fcat-no_out  = 'X'.
+    ENDCASE.
+
+    APPEND gs_fcat TO gt_fcat.
+  END-OF-DEFINITION.
+
+  _add_fcat 'PLANETYPE'   'SFLIGHT' 'PLANETYPE'   'Plane Type'.
+  _add_fcat 'PAYMENTSUM'  'SFLIGHT' 'PAYMENTSUM'  'Total Payment'.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_layout1
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_layout .
+  gs_layout-zebra      = 'X'.
+  gs_layout-cwidth_opt = 'X'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form refresh_grid
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM refresh_grid .
+  CALL METHOD go_alv->refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+
+  IF sy-subrc <> 0.
+*   Implement suit
+  ENDIF.
+ENDFORM.

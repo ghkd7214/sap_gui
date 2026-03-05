@@ -1,0 +1,29 @@
+*&---------------------------------------------------------------------*
+*& Report zquiz_21_g07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zquiz_21_g07.
+
+TABLES: ztcerti_g07.
+
+INCLUDE zquiz_21_g07_top.
+INCLUDE zquiz_21_g07_o01.
+INCLUDE zquiz_21_g07_i01.
+INCLUDE zquiz_21_g07_f01.
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE TEXT-t01.
+  SELECT-OPTIONS : s_reqdt FOR ztcerti_g07-reqdt NO-EXTENSION.
+  PARAMETERS : p_state  TYPE ztcerti_g07-status AS LISTBOX VISIBLE LENGTH 20,
+               p_certyp TYPE ztcerti_g07-certyp AS LISTBOX VISIBLE LENGTH 20,
+               p_recvm  TYPE ztcerti_g07-recvmth AS LISTBOX VISIBLE LENGTH 20.
+SELECTION-SCREEN END OF BLOCK b1.
+
+INITIALIZATION.
+  s_reqdt-sign = 'I'.
+  s_reqdt-option = 'BT'.
+  s_reqdt-low = sy-datum+6(2) && '01'.
+  s_reqdt-high = sy-datum.
+  APPEND s_reqdt.
+
+  CALL SCREEN 100.

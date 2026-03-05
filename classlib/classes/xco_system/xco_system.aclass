@@ -1,0 +1,61 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO System: External API
+"! </p>
+"!
+"! External API for package S_XCO_SYSTEM.
+CLASS xco_system DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      "! The type factory ({@link cl_xco_sys_type_f}) is used to obtain type
+      "! enumeration constants.
+      type                  TYPE REF TO cl_xco_sys_type_f READ-ONLY,
+
+      "! The software component API allows to obtain software component
+      "! handles (i.e. objects of type {@link if_xco_software_component}).
+      software_component    TYPE REF TO if_xco_software_component_fct READ-ONLY,
+
+      "! The software components API provides access to supported software
+      "! component classes (i.e. objects of type {@link if_xoc_software_components}).
+      software_components   TYPE REF TO if_xco_sys_api_sftw_cmpnts READ-ONLY,
+
+      "! The application component API allows to obtain application component
+      "! handles (i.e. objects of type {@link if_xco_application_component}).
+      application_component TYPE REF TO if_xco_application_component_f READ-ONLY,
+
+      "! The namespace API allows to obtain namespace handles (i.e. objects of
+      "! type {@link if_xco_namespace}).
+      namespace             TYPE REF TO if_xco_namespace_factory READ-ONLY,
+
+      "! The languages API provides access to supported language classes (i.e.
+      "! objects of type {@link if_xco_languages}).
+      languages             TYPE REF TO if_xco_sys_api_languages READ-ONLY,
+
+      "! Access to the XCO API for the TADIR.
+      tadir                 TYPE REF TO if_xco_tadir READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS XCO_SYSTEM IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    type = NEW cl_xco_sys_type_f( ).
+
+    DATA(lo_tool_set) = cl_xco_sys_tool_set=>instance.
+
+    software_component = NEW cl_xco_software_component_fct( lo_tool_set ).
+    software_components = NEW cl_xco_sys_api_sftw_cmpnts( lo_tool_set ).
+
+    application_component = NEW cl_xco_application_component_f( lo_tool_set ).
+
+    namespace = NEW cl_xco_namespace_factory( lo_tool_set ).
+
+    languages = NEW cl_xco_sys_api_languages( lo_tool_set ).
+
+    tadir = NEW cl_xco_tadir( lo_tool_set ).
+  ENDMETHOD.
+ENDCLASS.

@@ -1,0 +1,60 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO ABAP Repository: External API
+"! </p>
+"!
+"! External API for package S_XCO_ABAP_REPOSITORY.
+CLASS xco_abap_repository DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    CLASS-DATA:
+      "! OBOSOLETE Use xco_system=>tadir
+      tadir       TYPE REF TO if_xco_tadir READ-ONLY,
+
+      filter      TYPE REF TO if_xco_ar_filter_factory READ-ONLY,
+
+      object_type TYPE REF TO if_xco_ar_object_type_factory READ-ONLY,
+      object_name TYPE REF TO if_xco_ar_object_name_factory READ-ONLY,
+
+      package     TYPE REF TO if_xco_package_factory READ-ONLY,
+
+      object      TYPE REF TO if_xco_ar_api_object READ-ONLY,
+      objects     TYPE REF TO if_xco_ar_api_objects READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS XCO_ABAP_REPOSITORY IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    " Tadir.
+    tadir = xco_system=>tadir.
+
+    " Filter.
+    filter = NEW cl_xco_ar_filter_factory( ).
+
+    " Object type.
+    object_type = cl_xco_ar=>object_type.
+
+    " Object name.
+    object_name = NEW cl_xco_ar_object_name_factory( ).
+
+    " Package.
+    package = cl_xco_ar=>package.
+
+    " Object.
+    DATA(lo_tool_set) = NEW cl_xco_ar_tool_set(
+      io_abap_repository_object = cl_xco_ar=>object
+      io_cts_object             = xco_cts=>object
+      io_package                = package
+      io_function_module        = cl_xco_abap=>function_module
+    ).
+
+    object = NEW cl_xco_ar_api_object( lo_tool_set ).
+
+    " Objects.
+    objects = NEW cl_xco_ar_api_objects( lo_tool_set ).
+  ENDMETHOD.
+ENDCLASS.

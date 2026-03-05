@@ -1,0 +1,69 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO Dependency: SCTS_REQUEST_SELECTION implementation
+"! </p>
+"!
+"! Implementation of {@link if_xco_dep_fg_scts_request_sel}.
+CLASS cl_xco_dep_fg_scts_request_sel DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    INTERFACES:
+      if_xco_dep_fg_scts_request_sel.
+
+    CLASS-DATA:
+      instance TYPE REF TO if_xco_dep_fg_scts_request_sel READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_DEP_FG_SCTS_REQUEST_SEL IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    instance = NEW cl_xco_dep_fg_scts_request_sel( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_scts_request_sel~trint_read_request.
+    DATA(lo_function_module_call) = NEW lcl_trint_read_request(
+      iv_read_e070       = REF #( iv_read_e070 )
+      iv_read_e07t       = REF #( iv_read_e07t )
+      iv_read_e070c      = REF #( iv_read_e070c )
+      iv_read_e070m      = REF #( iv_read_e070m )
+      iv_read_objs_keys  = REF #( iv_read_objs_keys )
+      iv_read_attributes = REF #( iv_read_attributes )
+      cs_request         = REF #( cs_request )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_scts_request_sel~tr_get_request_of_task.
+    DATA(lo_function_module_call) = NEW lcl_tr_get_request_of_task(
+      is_trkorr               = REF #( is_trkorr )
+      iv_read_objs            = REF #( iv_read_objs )
+      iv_read_keys            = REF #( iv_read_keys )
+      iv_only_additional_objs = REF #( iv_only_additional_objs )
+      es_request              = REF #( es_request )
+      et_objects              = REF #( et_objects )
+      et_keys                 = REF #( et_keys )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_scts_request_sel~tr_read_request.
+    DATA(lo_function_module_call) = NEW lcl_tr_read_request(
+      iv_read_e070       = REF #( iv_read_e070 )
+      iv_read_e07t       = REF #( iv_read_e07t )
+      iv_read_e070c      = REF #( iv_read_e070c )
+      iv_read_e070m      = REF #( iv_read_e070m )
+      iv_read_objs_keys  = REF #( iv_read_objs_keys )
+      iv_read_attributes = REF #( iv_read_attributes )
+      iv_trkorr          = REF #( iv_trkorr )
+      cs_request         = REF #( cs_request )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+ENDCLASS.

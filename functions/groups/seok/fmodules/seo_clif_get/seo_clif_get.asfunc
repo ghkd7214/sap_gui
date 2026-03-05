@@ -1,0 +1,55 @@
+function seo_clif_get
+  importing
+    cifkey type seoclskey
+    value(version) type seoversion default seoc_version_inactive
+    value(state) type seostate default '0'
+  exporting
+    clstype type seoclstype
+    class type vseoclass
+    interface type vseointerf
+  exceptions
+    not_existing
+    deleted
+    model_only.
+
+
+
+
+
+  local error.
+  data:
+    cif_state type seostate,
+    _class type vseoclass,
+    _interface type vseointerf.
+
+  error = err_none.
+  assign_buffer class version.
+  assign_buffer interf version.
+  perform get_clstype
+    using cifkey version
+    changing clstype error.
+  raise_get_errors error cif cifkey-clsname.
+  if clstype = seoc_clstype_class.
+    perform get_class
+      using cifkey version seox_true abap_false
+      changing _class error.
+    raise_get_errors error cif cifkey-clsname.
+    cif_state = _class-state.
+    if class is requested.
+      class = _class.
+    endif.
+  elseif clstype = seoc_clstype_interface.
+    perform get_interface
+      using cifkey version seox_true abap_false
+      changing _interface error.
+    raise_get_errors error cif cifkey-clsname.
+    cif_state = _interface-state.
+    if interface is requested.
+      interface = _interface.
+    endif.
+  endif.
+  if cif_state = seoc_state_model_only
+    and state = seoc_state_implemented.
+    raise_model_only cif cifkey.
+  endif.
+endfunction.

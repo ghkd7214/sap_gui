@@ -1,0 +1,977 @@
+*&---------------------------------------------------------------------*
+*& Include          ZABAP2_G07_POU_01_REPORTF01
+*&---------------------------------------------------------------------*
+*&---------------------------------------------------------------------*
+*& Form create_cont
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM create_cont .
+  CREATE OBJECT go_cont
+    EXPORTING
+      container_name              = 'AREA'
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CREATE OBJECT go_alv
+    EXPORTING
+      i_parent          = go_cont
+    EXCEPTIONS
+      error_cntl_create = 1
+      error_cntl_init   = 2
+      error_cntl_link   = 3
+      error_dp_create   = 4
+      OTHERS            = 5.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  PERFORM set_fcat1.
+  PERFORM set_layout1.
+
+  CALL METHOD go_alv->set_table_for_first_display
+    EXPORTING
+      is_layout                     = gs_layout1
+    CHANGING
+      it_outtab                     = gt_data1
+      it_fieldcatalog               = gt_fcat1
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*     Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form refresh_grid
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM refresh_grid .
+  CALL METHOD go_alv->refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_fcat1
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_fcat1 .
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'LIGHT'.
+  gs_fcat1-coltext   = 'Status'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'CUST_TXT'.
+  gs_fcat1-coltext   = 'Cust. Grade'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'CUS_ID'.
+  gs_fcat1-coltext   = 'Cust. no.'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'ID'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'CUS_NAME'.
+  gs_fcat1-coltext   = 'Customer Name'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'NAME'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'BP_TYPE'.
+  gs_fcat1-coltext   = 'B/P Customer'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'CUSTTYPE'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'BP_TXT'.
+  gs_fcat1-coltext   = 'B/P Customer'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'BOOK_CNT'.
+  gs_fcat1-coltext   = 'Booking Counter'.
+  gs_fcat1-do_sum    = 'X'.
+  gs_fcat1-inttype   = 'I'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'POSTCODE'.
+  gs_fcat1-coltext   = 'Post. Code'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'POSTCODE'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'STREET'.
+  gs_fcat1-coltext   = 'Street'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'STREET'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'CITY'.
+  gs_fcat1-coltext   = 'City'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'CITY'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'DISCOUNT'.
+  gs_fcat1-coltext   = 'Discount'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'DISCOUNT'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'TELEPHONE'.
+  gs_fcat1-coltext   = 'Telephone No.'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'TELEPHONE'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+  CLEAR gs_fcat1.
+  gs_fcat1-fieldname = 'EMAIL'.
+  gs_fcat1-coltext   = 'E-Mail Address'.
+  gs_fcat1-ref_table = 'SCUSTOM'.
+  gs_fcat1-ref_field = 'EMAIL'.
+  APPEND gs_fcat1 TO gt_fcat1.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_layout1
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_layout1 .
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'X'.
+  gs_layout1-excp_fname = 'LIGHT'.
+  gs_layout1-totals_bef = 'X'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form showbooklist_100
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM showbooklist_100 .
+  DATA: lt_rows  TYPE lvc_t_row,
+        ls_row   TYPE lvc_s_row,
+
+        ls_data1 TYPE ty_list1.
+
+
+  CLEAR: lt_rows, ls_row.
+
+  CALL METHOD go_alv->get_selected_rows
+    IMPORTING
+      et_index_rows = lt_rows.
+
+  IF lt_rows IS INITIAL.
+    MESSAGE '데이터를 선택해주세요!' TYPE 'I' .
+    RETURN.
+  ELSE.
+    READ TABLE lt_rows INTO ls_row INDEX 1.
+    READ TABLE gt_data1 INTO ls_data1 INDEX ls_row-index.
+
+    IF sy-subrc = 0.
+      gv_custid200 = ls_data1-cus_id.
+      gv_bookid200 = ls_data1-cus_id.
+      gv_booknm200 = ls_data1-cus_name.
+
+      CALL SCREEN 200.
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_200
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> LV_CUSTOMID
+*&---------------------------------------------------------------------*
+FORM get_data_200  USING    p_customid.
+  DATA: lr_class TYPE RANGE OF sbook-class,
+        ls_class LIKE LINE OF lr_class,
+
+        lr_bp    TYPE RANGE OF scustom-custtype,
+        ls_bp    LIKE LINE OF lr_bp.
+
+  CLEAR ls_class.
+  IF r_all <> 'X'.
+    ls_class-sign = 'I'.
+    ls_class-option = 'EQ'.
+
+    CASE 'X'.
+      WHEN r_eco.
+        ls_class-low = 'C'.
+      WHEN r_bus.
+        ls_class-low = 'B'.
+      WHEN r_fir.
+        ls_class-low = 'F'.
+    ENDCASE.
+    APPEND ls_class TO lr_class.
+  ENDIF.
+
+  CLEAR ls_bp.
+  IF  pa_ctype IS NOT INITIAL.
+    ls_bp-sign   = 'I'.
+    ls_bp-option = 'EQ'.
+    ls_bp-low    = pa_ctype.
+    APPEND ls_bp TO lr_bp.
+  ENDIF.
+
+  CLEAR gt_data2.
+
+  SELECT sb~carrid,
+         sc~carrname,
+         sb~connid,
+         sb~fldate,
+         sb~bookid,
+         sb~customid,
+         sb~custtype,
+         sb~smoker,
+         sb~luggweight,
+         sb~wunit,
+         sb~class,
+         sb~loccuram,
+         sb~loccurkey,
+         sb~order_date,
+         sb~counter,
+         sb~agencynum,
+         st~name AS agencyname,
+         ztm~menunumber,
+         ztm~reqts,
+
+         CASE ztm~reqts
+           WHEN 'R' THEN 'Requested'
+           WHEN 'N' THEN 'Not Requested'
+           WHEN 'C' THEN 'Cancel'
+         ELSE ' '
+         END AS reqts_txt,
+
+         CASE ztm~reqts
+           WHEN 'R' THEN '3'
+           WHEN 'C' THEN '1'
+           ELSE ' '
+         END AS light
+
+    FROM sbook AS sb JOIN scarr AS sc ON sb~carrid = sc~carrid
+                     JOIN stravelag AS st ON sb~agencynum = st~agencynum
+                     JOIN scustom AS scu ON sb~customid = scu~id
+                     LEFT OUTER JOIN ztmenureq_g07 AS ztm ON sb~bookid = ztm~bookid
+
+    WHERE sb~customid = @p_customid
+      AND sb~fldate   IN @so_fld
+      AND scu~custtype IN @lr_bp
+      AND sb~class    IN @lr_class
+      AND sb~cancelled <> 'X'
+      AND sb~agencynum <> '00000000'
+
+    INTO CORRESPONDING FIELDS OF TABLE @gt_data2.
+
+  DATA: ls_style TYPE lvc_s_styl.
+
+  LOOP AT gt_data2 INTO gs_data2.
+    CLEAR: gs_data2-row_col,
+           gs_data2-btn_txt,
+           gs_data2-btn_cel.
+
+    IF gs_data2-menunumber IS INITIAL.
+      gs_data2-reqts = 'N'.
+    ENDIF.
+
+    CASE gs_data2-reqts.
+      WHEN 'C'. " Cancel
+        gs_data2-row_col = 'C610'. " Red
+      WHEN 'N' OR ' '.
+        gs_data2-row_col = 'C310'. " Yellow
+    ENDCASE.
+
+    IF gs_data2-reqts = 'R'.
+      gs_data2-btn_txt = 'Cancel'.
+      ls_style-fieldname = 'BTN_TXT'.                 " 버튼으로 만들 필드명
+      ls_style-style     = cl_gui_alv_grid=>mc_style_button. " 스타일 상수
+
+      INSERT ls_style INTO TABLE gs_data2-btn_cel.
+    ENDIF.
+
+    MODIFY gt_data2 FROM gs_data2.
+  ENDLOOP.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form create_cont2
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM create_cont2 .
+  CREATE OBJECT go_cont2
+    EXPORTING
+      container_name              = 'AREA2'
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CREATE OBJECT go_alv2
+    EXPORTING
+      i_parent          = go_cont2
+      i_appl_events     = 'X'
+    EXCEPTIONS
+      error_cntl_create = 1
+      error_cntl_init   = 2
+      error_cntl_link   = 3
+      error_dp_create   = 4
+      OTHERS            = 5.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  PERFORM set_fcat2.
+  PERFORM set_layout2.
+
+  SET HANDLER lcl_event_handler=>on_button_click FOR go_alv2.
+  SET HANDLER lcl_event_handler=>on_hotspot_click FOR go_alv2.
+
+  CALL METHOD go_alv2->set_table_for_first_display
+    EXPORTING
+      is_layout                     = gs_layout2
+    CHANGING
+      it_outtab                     = gt_data2
+      it_fieldcatalog               = gt_fcat2
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*     Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_fcat2
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_fcat2 .
+  DEFINE _add_fcat2.
+    CLEAR gs_fcat2.
+    gs_fcat2-fieldname = &1. " 필드명
+    gs_fcat2-ref_table = &2. " 참조 테이블 (텍스트 자동 가져오기 위함)
+    gs_fcat2-ref_field = &3. " 참조 필드
+    gs_fcat2-coltext   = &4. " 강제 지정할 컬럼명 (필요시)
+
+    " 특수 설정 (옵션)
+    CASE &1.
+      WHEN 'LIGHT'.
+        " 신호등 아이콘인 경우 (컬럼 헤더 없이 좁게 표현)
+        gs_fcat2-col_opt = 'X'.
+        gs_fcat2-just    = 'C'. " 가운데 정렬
+      WHEN 'LUGGWEIGHT'.
+        " 수량 필드와 단위 필드 연결
+        gs_fcat2-qfieldname = 'WUNIT'.
+      WHEN 'LOCCURAM'.
+        " 금액 필드와 통화 필드 연결
+        gs_fcat2-cfieldname = 'LOCCURKEY'.
+      WHEN 'BTN_TXT'.
+        " 버튼 텍스트
+      WHEN 'CONNID' OR 'FLDATE' OR 'MENUNUMBER'.
+        gs_fcat2-hotspot = 'X'.
+    ENDCASE.
+
+    APPEND gs_fcat2 TO gt_fcat2.
+  END-OF-DEFINITION.
+
+
+  _add_fcat2 'LIGHT'       ''        ''            'Status'.
+
+  _add_fcat2 'CARRID'      'SBOOK'   'CARRID'      'Carrier'.
+  _add_fcat2 'CARRNAME'    'SCARR'   'CARRNAME'    'Airline'. " SCARR 참조
+  _add_fcat2 'CONNID'      'SBOOK'   'CONNID'      'No.'.
+  _add_fcat2 'FLDATE'      'SBOOK'   'FLDATE'      'Flight Date'.
+  _add_fcat2 'BOOKID'      'SBOOK'   'BOOKID'      'Booking No.'.
+  _add_fcat2 'CUSTOMID'    'SBOOK'   'CUSTOMID'    'Cust No.'.
+  _add_fcat2 'CUSTTYPE'    'SBOOK'   'CUSTTYPE'    'B/P Cust.'.
+  _add_fcat2 'SMOKER'      'SBOOK'   'SMOKER'      'Smoker'.
+
+  _add_fcat2 'LUGGWEIGHT'  'SBOOK'   'LUGGWEIGHT'  'Wt'.
+  _add_fcat2 'WUNIT'       'SBOOK'   'WUNIT'       'Unit'.
+
+  _add_fcat2 'CLASS'       'SBOOK'   'CLASS'       ''.
+
+  _add_fcat2 'LOCCURAM'    'SBOOK'   'LOCCURAM'    'Amount'.
+  _add_fcat2 'LOCCURKEY'   'SBOOK'   'LOCCURKEY'   'Curr'.
+
+  _add_fcat2 'ORDER_DATE'  'SBOOK'   'ORDER_DATE'  'Booking Date'.
+  _add_fcat2 'COUNTER'     'SBOOK'   'COUNTER'     'SalesOff'.
+  _add_fcat2 'AGENCYNUM'   'SBOOK'   'AGENCYNUM'   'Agency No.'.
+  _add_fcat2 'AGENCYNAME'  'STRAVELAG' 'NAME'      'Agency Name'.
+
+  _add_fcat2 'MENUNUMBER'  'SMENU'   'MENUNUMBER'  'Menu'.
+
+  _add_fcat2 'REQTS'       'ZTMENUREQ_G07' 'REQTS' 'Req Status'.
+  _add_fcat2 'REQTS_TXT'   ''              ''      'Request Text'.
+
+  _add_fcat2 'BTN_TXT'     ''              ''      'Action'.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_layout2
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_layout2 .
+  gs_layout2-zebra      = 'X'.
+  gs_layout2-cwidth_opt = 'X'.
+  gs_layout2-excp_fname = 'LIGHT'.
+  gs_layout2-info_fname = 'ROW_COL'.
+  gs_layout2-stylefname = 'BTN_CEL'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form refresh_grid2
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM refresh_grid2 .
+  CALL METHOD go_alv2->refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form show_reqest
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM show_reqest .
+  DATA: lt_rows TYPE lvc_t_row,
+        ls_row  TYPE lvc_s_row,
+
+        ls_data TYPE ty_list2.
+
+  CLEAR: lt_rows, ls_row.
+
+  CALL METHOD go_alv2->get_selected_rows
+    IMPORTING
+      et_index_rows = lt_rows.
+
+  IF lt_rows IS INITIAL.
+    MESSAGE '데이터를 선택하여 주세요!' TYPE 'I' .
+    RETURN.
+  ELSE.
+    READ TABLE lt_rows INTO ls_row INDEX 1.
+
+    READ TABLE gt_data2 INTO ls_data  INDEX ls_row-index.
+
+    IF sy-subrc = 0.
+      gv_carrid300 = ls_data-carrid.
+      gv_carrnm300 = ls_data-carrname.
+
+      CALL SCREEN 300.
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_data_300
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> LV_CARRID
+*&      --> LV_MENU_NO
+*&---------------------------------------------------------------------*
+FORM get_data_300  USING    p_carrid.
+
+  SELECT smn~carrid AS carrid,
+         smn~menunumber AS menu,
+
+         smn~starter AS meal1,
+         sml1~text AS meal1txt,
+
+         smn~maincourse AS meal2,
+         sml2~text AS meal2txt,
+
+         smn~dessert AS meal3,
+         sml3~text AS meal3txt
+
+    FROM smenu AS smn JOIN smealt AS sml1 ON smn~starter = sml1~mealnumber
+                                         AND smn~carrid  = sml1~carrid
+                                         AND sml1~sprache = '3'
+                      JOIN smealt AS sml2 ON smn~maincourse = sml2~mealnumber
+                                         AND smn~carrid  = sml2~carrid
+                                         AND sml2~sprache = '3'
+                      JOIN smealt AS sml3 ON smn~dessert = sml3~mealnumber
+                                         AND smn~carrid  = sml3~carrid
+                                         AND sml3~sprache = '3'
+   WHERE smn~carrid = @p_carrid
+    INTO CORRESPONDING FIELDS OF TABLE @gt_data3.
+
+*  cl_demo_output=>display( gt_data3 ).
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form save_reqest
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM save_reqest .
+  DATA: lt_rows TYPE lvc_t_row,
+        ls_row  TYPE lvc_s_row,
+        ls_data TYPE ty_list3,
+        ls_req  TYPE ztmenureq_g07,
+        lv_msg  TYPE char20.
+
+  CALL METHOD go_alv3->get_selected_rows
+    IMPORTING
+      et_index_rows = lt_rows.
+
+  IF lines( lt_rows ) = 0.
+    MESSAGE '데이터를 선택하여 주세요' TYPE 'I' DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  READ TABLE lt_rows INTO ls_row INDEX 1.
+  READ TABLE gt_data3 INTO ls_data INDEX ls_row-index.
+
+  IF sy-subrc <> 0.
+    MESSAGE '데이터를 선택하여 주세요!' TYPE 'I'.
+    RETURN.
+  ENDIF.
+
+  SELECT SINGLE *
+    FROM ztmenureq_g07
+    INTO ls_req
+   WHERE bookid = zspou01_g07_300-bookid.
+
+  IF sy-subrc = 0.
+    IF ls_req-menunumber = ls_data-menu.
+      MESSAGE '다른 메뉴를 선택하여 주세요!' TYPE 'I' .
+      RETURN.
+    ENDIF.
+    lv_msg = '변경 신청'.
+  ELSE.
+    CLEAR ls_req.
+    ls_req-bookid = zspou01_g07_300-bookid.
+    lv_msg = '신청'.
+  ENDIF.
+
+  MOVE-CORRESPONDING zspou01_g07_300 TO ls_req.
+
+  ls_req-menunumber = ls_data-menu.
+  ls_req-reqdat     = sy-datum.
+  ls_req-reqts      = 'R'.
+
+  MODIFY ztmenureq_g07 FROM ls_req.
+
+  IF sy-subrc = 0.
+    COMMIT WORK.
+    MESSAGE '기내식 ' && lv_msg && '이 완료되었습니다.' TYPE 'S'.
+
+    zspou01_g07_300-reqdat = sy-datum.
+    zspou01_g07_300-menu = ls_data-menu.
+  ELSE.
+    ROLLBACK WORK.
+    MESSAGE '저장 중 오류가 발생했습니다.' TYPE 'E'.
+  ENDIF.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_screen_300
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_screen_300 .
+  DATA: lt_rows   TYPE lvc_t_row,
+        ls_row    TYPE lvc_s_row,
+
+        ls_data   TYPE ty_list2,
+        lv_carrid TYPE ty_list2-carrid.
+
+  CLEAR: lt_rows, ls_row.
+
+  CALL METHOD go_alv2->get_selected_rows
+    IMPORTING
+      et_index_rows = lt_rows.
+
+  IF lt_rows IS INITIAL.
+    MESSAGE '데이터를 선택하여 주세요!' TYPE 'I' .
+    RETURN.
+  ELSE.
+    READ TABLE lt_rows INTO ls_row INDEX 1.
+
+    READ TABLE gt_data2 INTO ls_data  INDEX ls_row-index.
+
+    IF sy-subrc = 0.
+      lv_carrid = ls_data-carrid.
+
+      MOVE-CORRESPONDING ls_data TO zspou01_g07_300.
+
+      zspou01_g07_300-menu = ls_data-menunumber.
+      zspou01_g07_300-reqdat = sy-datum.
+    ENDIF.
+
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form create_cont3
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM create_cont3 .
+  CREATE OBJECT go_cont3
+    EXPORTING
+      container_name              = 'AREA3'
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  CREATE OBJECT go_alv3
+    EXPORTING
+      i_parent          = go_cont3
+    EXCEPTIONS
+      error_cntl_create = 1
+      error_cntl_init   = 2
+      error_cntl_link   = 3
+      error_dp_create   = 4
+      OTHERS            = 5.
+
+  IF sy-subrc <> 0.
+
+  ENDIF.
+
+  PERFORM set_fcat3.
+  PERFORM set_layout3.
+  PERFORM set_exclude_toolbar.
+
+  SET HANDLER lcl_event_handler=>on_toolbar      FOR go_alv3.
+  SET HANDLER lcl_event_handler=>on_user_command FOR go_alv3.
+
+  CALL METHOD go_alv3->set_table_for_first_display
+    EXPORTING
+      is_layout                     = gs_layout3
+      it_toolbar_excluding          = gt_uiexclude
+    CHANGING
+      it_outtab                     = gt_data3
+      it_fieldcatalog               = gt_fcat3
+    EXCEPTIONS
+      invalid_parameter_combination = 1
+      program_error                 = 2
+      too_many_lines                = 3
+      OTHERS                        = 4.
+  IF sy-subrc <> 0.
+*     Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form refresh_grid3
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM refresh_grid3 .
+  CALL METHOD go_alv3->refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+
+  IF sy-subrc <> 0.
+*   Implement suitable error handling here
+  ENDIF.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_fcat3
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_fcat3 .
+  DEFINE _add_fcat3.
+    CLEAR gs_fcat3.
+    gs_fcat3-fieldname = &1. " 인터널 테이블 필드명
+    gs_fcat3-ref_table = &2. " 참조 테이블
+    gs_fcat3-ref_field = &3. " 참조 필드
+    gs_fcat3-coltext   = &4. " 화면에 표시될 컬럼 제목
+
+    IF &1 CP '*TXT'.
+      gs_fcat3-outputlen = 30. " 텍스트는 30자리 고정
+    ENDIF.
+
+    APPEND gs_fcat3 TO gt_fcat3.
+  END-OF-DEFINITION.
+
+  REFRESH gt_fcat3.
+
+  _add_fcat3 'CARRID'   'SMENU'   'CARRID'      'Carrier'.
+  _add_fcat3 'MENU'     'SMENU'   'MENUNUMBER'  'Menu'.
+
+  " 2. 에피타이저 (Starter)
+  _add_fcat3 'MEAL1'    'SMENU'   'STARTER'     'Appetizer'.
+  _add_fcat3 'MEAL1TXT' 'SMEALT'  'TEXT'        'Dish description'.
+
+  " 3. 메인 코스 (Main Course)
+  _add_fcat3 'MEAL2'    'SMENU'   'MAINCOURSE'  'Main Course'.
+  _add_fcat3 'MEAL2TXT' 'SMEALT'  'TEXT'        'Dish description'.
+
+  " 4. 디저트 (Dessert)
+  _add_fcat3 'MEAL3'    'SMENU'   'DESSERT'     'Dessert'.
+  _add_fcat3 'MEAL3TXT' 'SMEALT'  'TEXT'        'Dish description'.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_layout3
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_layout3 .
+  gs_layout2-zebra      = 'X'.
+  gs_layout2-cwidth_opt = 'X'.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form set_exclude_toolbar
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*& -->  p1        text
+*& <--  p2        text
+*&---------------------------------------------------------------------*
+FORM set_exclude_toolbar .
+  APPEND cl_gui_alv_grid=>mc_fc_excl_all TO gt_uiexclude.
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form open_popup_tab
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> LS_DATA
+*&---------------------------------------------------------------------*
+FORM open_popup_tab  USING    ps_data TYPE ty_list2.
+  CLEAR: zspou01_g07_401, zspou01_g07_402.
+
+  SELECT SINGLE
+         carrid,
+         connid,
+         fltime,
+         distance,
+         distid,
+         fltype,
+         countryfr,
+         cityfrom,
+         airpfrom,
+         deptime,
+         countryto,
+         cityto,
+         airpto,
+         arrtime,
+         sa1~name AS fname,
+         sa2~name AS tname
+    FROM spfli AS sp JOIN sairport AS sa1 ON sp~airpfrom = sa1~id
+                     JOIN sairport AS sa2 ON sp~airpfrom = sa2~id
+    INTO CORRESPONDING FIELDS OF @zspou01_g07_401
+    WHERE carrid = @gs_data2-carrid
+      AND connid = @gs_data2-connid.
+
+  IF zspou01_g07_401-fltype = 'X'.
+    cb401_s = 'X'.
+  ELSE.
+    cb401_c = 'X'.
+  ENDIF.
+
+  SELECT SINGLE
+         carrid
+         connid
+         fldate
+         price
+         currency
+         paymentsum
+         planetype
+         seatsmax
+         seatsmax_b
+         seatsmax_f
+         seatsocc
+         seatsocc_b
+         seatsocc_f
+    FROM sflight
+    INTO CORRESPONDING FIELDS OF zspou01_g07_402
+    WHERE carrid = gs_data2-carrid
+      AND connid = gs_data2-connid
+      AND fldate = gs_data2-fldate.
+
+  zspou01_g07_402-tmax = zspou01_g07_402-seatsmax + zspou01_g07_402-seatsmax_b + zspou01_g07_402-seatsmax_f.
+  zspou01_g07_402-tocc = zspou01_g07_402-seatsocc + zspou01_g07_402-seatsocc_b + zspou01_g07_402-seatsocc_f.
+  zspou01_g07_402-freeseats = zspou01_g07_402-tmax - zspou01_g07_402-tocc.
+  zspou01_g07_402-booking_rate = zspou01_g07_402-tocc * 100 / zspou01_g07_402-tmax.
+
+  CALL SCREEN 400 STARTING AT 10 5.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Module STATUS_0400 OUTPUT
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+MODULE status_0400 OUTPUT.
+  SET TITLEBAR 'T400'.
+  SET PF-STATUS 'S400'.
+
+  CASE ts_info-activetab.
+    WHEN 'TAB1'.
+      gv_subsc = '0401'.
+    WHEN 'TAB2'.
+      gv_subsc = '0402'.
+    WHEN OTHERS.
+      ts_info-activetab = 'TAB1'.
+      gv_subsc = '0401'.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*&      Module  USER_COMMAND_0400  INPUT
+*&---------------------------------------------------------------------*
+*       text
+*----------------------------------------------------------------------*
+MODULE user_command_0400 INPUT.
+  CASE ok_code.
+    WHEN 'TAB1' OR 'TAB2' .
+      ts_info-activetab = ok_code.
+*    WHEN 'CLOSE' OR 'CANC' or 'BACK' or 'CANCEl'. " 팝업 닫기
+*      LEAVE TO SCREEN 0.
+    WHEN 'BACK' OR 'CANCEl'.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.
+*&---------------------------------------------------------------------*
+*& Form open_popup_meal
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> LS_DATA
+*&---------------------------------------------------------------------*
+FORM open_popup_meal  USING    p_data TYPE ty_list2.
+  IF p_data-menunumber = '' .
+    MESSAGE '메뉴 지정후 이용해주십시오.' TYPE 'S' .
+    RETURN.
+  ENDIF.
+  SELECT SINGLE
+         smn~carrid AS carrid,
+         sc~carrname AS name,
+         smn~menunumber AS menu,
+
+         smn~starter AS starter,
+         sml1~text AS text1,
+
+         smn~maincourse AS maincourse,
+         sml2~text AS text2,
+
+         smn~dessert AS dessert,
+         sml3~text AS text3
+
+    FROM smenu AS smn JOIN smealt AS sml1 ON smn~starter = sml1~mealnumber
+                                         AND smn~carrid  = sml1~carrid
+                                         AND sml1~sprache = '3'
+                      JOIN smealt AS sml2 ON smn~maincourse = sml2~mealnumber
+                                         AND smn~carrid  = sml2~carrid
+                                         AND sml2~sprache = '3'
+                      JOIN smealt AS sml3 ON smn~dessert = sml3~mealnumber
+                                         AND smn~carrid  = sml3~carrid
+                                         AND sml3~sprache = '3'
+                      JOIN scarr AS sc ON smn~carrid = sc~carrid
+   WHERE smn~carrid = @p_data-carrid
+     AND smn~menunumber = @p_data-menunumber
+    INTO CORRESPONDING FIELDS OF @zspou01_g07_403.
+
+  CALL SCREEN 403 STARTING AT 10 5.
+
+ENDFORM.

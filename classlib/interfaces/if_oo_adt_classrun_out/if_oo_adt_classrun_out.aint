@@ -1,0 +1,27 @@
+"! The interface if_oo_adt_classrun_out is the type of the parameter {@link if_oo_adt_classrun.METH:main.DATA:out} of method {@link if_oo_adt_classrun.METH:main} of interface  {@link if_oo_adt_classrun}.
+"! It offers two methods {@link if_oo_adt_classrun_out.METH:write} and {@link if_oo_adt_classrun_out.METH:get}.
+interface if_oo_adt_classrun_out
+
+public.
+
+  "! The write method allows to output the content of any ABAP data object in textual format to the ABAP Console of ADT.
+  "!
+  "! @parameter data   | The ABAP data object which will be written
+  "! @parameter name   | Optional name to be written in front of the data output if not initial
+  "! @parameter output | Self reference to the current object. Can be used for method chaining.
+  methods write
+    importing data          type any
+              name          type string optional
+    returning value(output) type ref to if_oo_adt_classrun_out.
+
+  "! The get method allows to receive the current text string and starts a new output stream.
+  "!
+  "! @parameter data   | get( data = ... ) is a short form for write( data = ... ) and get( ).
+  "! @parameter name   | get( data = ... name = ... ) is a short form for write( data = ... name = ... ) and get( ).
+  "! @parameter output | The formatted text string
+  methods get
+    importing data          type any    optional
+              name          type string optional preferred parameter data
+    returning value(output) type string.
+
+endinterface.

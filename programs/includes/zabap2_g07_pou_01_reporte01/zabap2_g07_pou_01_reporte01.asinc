@@ -1,0 +1,121 @@
+*&---------------------------------------------------------------------*
+*& Include          ZABAP2_G07_POU_01_REPORTE01
+*&---------------------------------------------------------------------*
+INITIALIZATION.
+  DATA: lv_low_date TYPE sy-datum.
+
+  CALL FUNCTION 'RP_CALC_DATE_IN_INTERVAL'
+    EXPORTING
+      date      = sy-datum " 기준 날짜
+      days      = '00'     " 일수
+      months    = '06'     " 월수
+      years     = '00'     " 연수
+      signum    = '+'      " + or -
+    IMPORTING
+      calc_date = lv_low_date.
+
+  so_fld-sign = 'I'.
+  so_fld-option = 'BT'.
+  so_fld-low = sy-datum.
+  so_fld-high = lv_low_date.
+  APPEND so_fld.
+
+  LOOP AT SCREEN.
+    IF screen-name = 'SO_FLD-LOW'.
+      screen-input = '0'.
+      MODIFY SCREEN.
+    ENDIF.
+  ENDLOOP.
+
+at sELECTION-SCREEN.
+
+START-OF-SELECTION.
+  DATA: lr_class TYPE RANGE OF sbook-class,
+        ls_class LIKE LINE OF lr_class,
+
+        lr_bp    TYPE RANGE OF scustom-custtype,
+        ls_bp    LIKE LINE OF lr_bp.
+
+  CLEAR ls_class.
+  IF r_all <> 'X'.
+    ls_class-sign = 'I'.
+    ls_class-option = 'EQ'.
+
+    CASE 'X'.
+      WHEN r_eco.
+        ls_class-low = 'C'.
+      WHEN r_bus.
+        ls_class-low = 'B'.
+      WHEN r_fir.
+        ls_class-low = 'F'.
+    ENDCASE.
+    APPEND ls_class TO lr_class.
+  ENDIF.
+
+  CLEAR ls_bp.
+  IF  pa_ctype IS NOT INITIAL.
+    ls_bp-sign   = 'I'.
+    ls_bp-option = 'EQ'.
+    ls_bp-low    = pa_ctype.
+    APPEND ls_bp TO lr_bp.
+  ENDIF.
+
+  SELECT sc~id        AS cus_id,
+         sc~name      AS cus_name,
+         sc~custtype  AS bp_type,
+
+         CASE sc~custtype
+           WHEN 'B' THEN 'Business Customer'
+           WHEN 'P' THEN 'Private Customer'
+           ELSE 'Unknown'
+         END AS bp_txt,
+
+         COUNT( sb~bookid ) AS book_cnt,
+
+         CASE
+           WHEN COUNT( sb~bookid ) < 5 THEN 'Silver'
+           WHEN COUNT( sb~bookid ) >= 5 AND COUNT( sb~bookid ) < 10 THEN 'Gold'
+           WHEN COUNT( sb~bookid ) >= 10 THEN 'Platinum'
+         END AS cust_txt,
+
+         CASE
+           WHEN COUNT( sb~bookid ) < 5 THEN '1'
+           WHEN COUNT( sb~bookid ) >= 5 AND COUNT( sb~bookid ) < 10 THEN '2'
+           WHEN COUNT( sb~bookid ) >= 10 THEN '3'
+         END AS light,
+
+         sc~postcode,
+         sc~street,
+         sc~city,
+         sc~discount,
+         sc~telephone,
+         sc~email
+
+    FROM scustom AS sc LEFT OUTER JOIN sbook AS sb ON sc~id = sb~customid
+*                       LEFT OUTER JOIN sbook AS sb ON sc~id = sb~customid
+   WHERE sc~id       IN @so_cid
+     AND sb~fldate   IN @so_fld
+     AND sc~custtype IN @lr_bp
+     AND sb~class    IN @lr_class
+     AND sb~cancelled <> 'X'
+     AND sb~agencynum <> '00000000'
+
+ GROUP BY sc~id,
+          sc~name,
+          sc~custtype,
+          sc~postcode,
+          sc~street,
+          sc~city,
+          sc~discount,
+          sc~telephone,
+          sc~email
+
+ ORDER BY sc~id
+
+  INTO CORRESPONDING FIELDS OF TABLE @gt_data1.
+
+  gv_data1_cnt = lines( gt_data1 ).
+
+*  cl_demo_output=>display( gt_data1 ).
+
+  CALL SCREEN 100.

@@ -1,0 +1,92 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO Dependency: STRD function group implementation
+"! </p>
+"!
+"! Implementation of {@link if_xco_dep_fg_strd}.
+CLASS cl_xco_dep_fg_strd DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    INTERFACES:
+      if_xco_dep_fg_strd.
+
+    CLASS-DATA:
+      instance TYPE REF TO if_xco_dep_fg_strd READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_DEP_FG_STRD IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    instance = NEW cl_xco_dep_fg_strd( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_strd~tr_append_to_comm.
+    DATA(lo_function_module_call) = NEW lcl_tr_append_to_comm(
+      pi_korrnum            = REF #( pi_korrnum )
+      wi_e071               = REF #( wi_e071 )
+      wi_simulation         = REF #( wi_simulation )
+      wi_suppress_key_check = REF #( wi_suppress_key_check )
+      wt_e071k              = REF #( wt_e071k )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_strd~tr_devclass_get.
+    DATA(lo_function_module_call) = NEW lcl_tr_devclass_get(
+      iv_devclass = REF #( iv_devclass )
+      es_tdevc    = REF #( es_tdevc )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_strd~tr_insert_new_comm.
+    DATA(lo_function_module_call) = NEW lcl_tr_insert_new_comm(
+      wi_kurztext      = REF #( wi_kurztext )
+      wi_trfunction    = REF #( wi_trfunction )
+      wi_strkorr       = REF #( wi_strkorr )
+      wi_category      = REF #( wi_category )
+      iv_tarsystem     = REF #( iv_tarsystem )
+      wi_client        = REF #( wi_client )
+      wi_target_client = REF #( wi_target_client )
+      iv_tardevcl      = REF #( iv_tardevcl )
+      iv_devclass      = REF #( iv_devclass )
+      iv_tarlayer      = REF #( iv_tarlayer )
+      wi_protect       = REF #( wi_protect )
+      iv_simulation    = REF #( iv_simulation )
+      we_trkorr        = REF #( we_trkorr )
+      we_e070          = REF #( we_e070 )
+      we_e07t          = REF #( we_e07t )
+      we_e070c         = REF #( we_e070c )
+      es_e070m         = REF #( es_e070m )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_dep_fg_strd~tr_tadir_interface.
+    DATA(lo_function_module_call) = NEW lcl_tr_tadir_interface(
+      wi_delete_tadir_entry = REF #( wi_delete_tadir_entry )
+      wi_test_modus         = REF #( wi_test_modus )
+      wi_tadir_pgmid        = REF #( wi_tadir_pgmid )
+      wi_tadir_object       = REF #( wi_tadir_object )
+      wi_tadir_obj_name     = REF #( wi_tadir_obj_name )
+      wi_tadir_devclass     = REF #( wi_tadir_devclass )
+      wi_tadir_masterlang   = REF #( wi_tadir_masterlang )
+      wi_tadir_cproject     = REF #( wi_tadir_cproject )
+      wi_remove_genflag     = REF #( wi_remove_genflag )
+      wi_set_genflag        = REF #( wi_set_genflag )
+      wi_read_only          = REF #( wi_read_only )
+      iv_set_edtflag        = REF #( iv_set_edtflag )
+      iv_delflag            = REF #( iv_delflag )
+      new_tadir_entry       = REF #( new_tadir_entry )
+    ).
+    lo_function_module_call->if_xco_dep_call~execute( ).
+  ENDMETHOD.
+ENDCLASS.

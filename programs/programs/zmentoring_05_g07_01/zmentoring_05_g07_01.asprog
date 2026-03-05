@@ -1,0 +1,67 @@
+*&---------------------------------------------------------------------*
+*& Report ZMENTORING_05_G07
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zmentoring_05_g07_01.
+
+TABLES: sflight.
+
+TYPES: BEGIN OF ty_list,
+         carrid           TYPE sflight-carrid,
+         connid           TYPE sflight-connid,
+         fldate           TYPE sflight-fldate,
+         seatsmax         TYPE sflight-seatsmax,
+         seatsocc         TYPE sflight-seatsocc,
+         currency         TYPE sflight-currency,
+         occupancy_status TYPE c LENGTH 20,
+         currency_note    TYPE c LENGTH 20,
+       END OF ty_list.
+
+DATA: lt_list TYPE STANDARD TABLE OF ty_list.
+
+SELECT-OPTIONS : so_fld FOR sflight-fldate.
+
+INITIALIZATION.
+  DATA: lv_start_date TYPE datum.
+
+  lv_start_date(4) = sy-datum(4) - 2.
+  lv_start_date+4(4) = sy-datum+4(4).
+
+  so_fld-sign   = 'I'.
+  so_fld-option = 'BT'.
+  so_fld-low  = lv_start_date.
+  so_fld-high = sy-datum.
+  APPEND so_fld.
+
+START-OF-SELECTION.
+
+  DATA: lv_rate_low  TYPE p DECIMALS 2 VALUE '0.50',
+        lv_rate_high TYPE p DECIMALS 2 VALUE '0.90'.
+
+*  SELECT carrid,   " 항공사 ID
+*         connid,   " 항공편 번호
+*         fldate,   " 비행 날짜
+*         seatsmax, " 최대 좌석
+*         seatsocc, " 예약된 좌석
+*         CASE
+*           WHEN seatsocc = 0 THEN '예약 없음'
+*           WHEN seatsocc < seatsmax * @lv_rate_low THEN '여유'
+*           WHEN seatsocc < seatsmax * @lv_rate_high THEN '보통'
+*           ELSE '매진 임박'
+*         END AS occupancy_status,
+*         CASE currency
+*           WHEN 'USD' THEN '미국 달러 결제'
+*           WHEN 'EUR' THEN '유로 결제'
+*           ELSE '기타 통화'
+*         END AS currency_note
+*    FROM sflight
+*    INTO TABLE @lt_list
+*    WHERE fldate IN @so_fld.
+
+  SELECT *
+    FROM zmentoring_view_07_1
+   WHERE fldate IN @so_fld
+    INTO CORRESPONDING FIELDS OF TABLE @lt_list.
+
+  cl_demo_output=>display( lt_list ).

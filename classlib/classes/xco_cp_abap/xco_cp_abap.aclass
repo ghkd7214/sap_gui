@@ -1,0 +1,100 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO CP ABAP: External API
+"! </p>
+"!
+"! External API for package S_XCO_CP_ABAP.
+CLASS xco_cp_abap DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    TYPES:
+      BEGIN OF ts_type,
+        built_in TYPE REF TO cl_xco_abap_t_built_in_factory,
+        generic  TYPE REF TO cl_xco_abap_t_generic_factory,
+      END OF ts_type.
+
+    CLASS-DATA:
+      repository TYPE REF TO if_xco_abap_repository READ-ONLY,
+
+      type       TYPE ts_type READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor,
+
+      class
+        IMPORTING
+          iv_name         TYPE sxco_ao_object_name
+        RETURNING
+          VALUE(ro_class) TYPE REF TO if_xco_ao_class,
+
+      interface
+        IMPORTING
+          iv_name             TYPE sxco_ao_object_name
+        RETURNING
+          VALUE(ro_interface) TYPE REF TO if_xco_ao_interface,
+
+      function_group
+        IMPORTING
+          iv_name                  TYPE sxco_fg_object_name
+        RETURNING
+          VALUE(ro_function_group) TYPE REF TO if_xco_function_group,
+
+      function_module
+        IMPORTING
+          iv_name                   TYPE sxco_fm_name
+        RETURNING
+          VALUE(ro_function_module) TYPE REF TO if_xco_function_module.
+ENDCLASS.
+
+
+
+CLASS XCO_CP_ABAP IMPLEMENTATION.
+
+
+  METHOD class.
+    DATA(lv_name) = to_upper( iv_name ).
+    DATA(lo_tool_set) = NEW cl_xco_ao_tool_set( cl_xco_cp_ar=>object ).
+
+    ro_class = NEW cl_xco_ao_class(
+      iv_object_name = CONV #( lv_name )
+      io_tool_set    = lo_tool_set
+    ).
+  ENDMETHOD.
+
+
+  METHOD class_constructor.
+    repository = xco_abap=>repository.
+
+    type = xco_abap=>type.
+  ENDMETHOD.
+
+
+  METHOD function_group.
+    DATA(lv_name) = to_upper( iv_name ).
+    DATA(lo_tool_set) = NEW cl_xco_fg_tool_set(
+      io_abap_repository_object = cl_xco_cp_ar=>object
+      io_function_module        = cl_xco_cp_abap=>function_module
+    ).
+
+    ro_function_group = NEW cl_xco_function_group(
+      iv_name     = CONV #( lv_name )
+      io_tool_set = lo_tool_set
+    ).
+  ENDMETHOD.
+
+
+  METHOD function_module.
+    DATA(lv_name) = to_upper( iv_name ).
+
+    ro_function_module = cl_xco_cp_abap=>function_module->for( CONV #( lv_name ) ).
+  ENDMETHOD.
+
+
+  METHOD interface.
+    DATA(lv_name) = to_upper( iv_name ).
+    DATA(lo_tool_set) = NEW cl_xco_ao_tool_set( cl_xco_cp_ar=>object ).
+
+    ro_interface = NEW cl_xco_ao_interface(
+      iv_object_name = CONV #( lv_name )
+      io_tool_set    = lo_tool_set
+    ).
+  ENDMETHOD.
+ENDCLASS.

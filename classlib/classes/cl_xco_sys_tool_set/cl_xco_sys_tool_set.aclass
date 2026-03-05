@@ -1,0 +1,78 @@
+"! <p class="shorttext synchronized" lang="EN">
+"!  XCO System: Tool set implementation
+"! </p>
+"!
+"! Implementation of {@link if_xco_sys_tool_set}.
+CLASS cl_xco_sys_tool_set DEFINITION PUBLIC FINAL CREATE PRIVATE.
+  PUBLIC SECTION.
+    INTERFACES:
+      if_xco_sys_tool_set.
+
+    CLASS-DATA:
+      instance TYPE REF TO if_xco_sys_tool_set READ-ONLY.
+
+    CLASS-METHODS:
+      class_constructor.
+ENDCLASS.
+
+
+
+CLASS CL_XCO_SYS_TOOL_SET IMPLEMENTATION.
+
+
+  METHOD class_constructor.
+    instance = NEW cl_xco_sys_tool_set( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_ac_tool_set_factory~get_tool_set.
+    ro_tool_set = cl_xco_ac_tool_set=>instance.
+  ENDMETHOD.
+
+
+  METHOD if_xco_ns_tool_set_factory~get_tool_set.
+    ro_tool_set = cl_xco_ns_tool_set=>instance.
+  ENDMETHOD.
+
+
+  METHOD if_xco_sc_tool_set_factory~get_tool_set.
+    ro_tool_set = cl_xco_sc_tool_set=>instance.
+  ENDMETHOD.
+
+
+  METHOD if_xco_sys_tool_set~get_available_languages.
+    SELECT
+      FROM t002
+      FIELDS spras
+      INTO TABLE @rt_available_languages.               "#EC CI_NOWHERE
+  ENDMETHOD.
+
+
+  METHOD if_xco_sys_tool_set~get_installed_languages.
+    SELECT
+      FROM t002c
+      FIELDS spras
+      WHERE lainst EQ @abap_true
+      INTO TABLE @rt_usable_languages.
+  ENDMETHOD.
+
+
+  METHOD if_xco_sys_tool_set~language_tool_set.
+    ro_language_tool_set = NEW cl_xco_lang_tool_set( ).
+  ENDMETHOD.
+
+
+  METHOD if_xco_sys_tool_set~str9.
+    ro_str9 = cl_xco_dep_fg_str9=>instance.
+  ENDMETHOD.
+
+
+  METHOD if_xco_sys_tool_set~tenant_tool_set.
+    ro_tenant_tool_set = cl_xco_ten_tool_set=>instance.
+  ENDMETHOD.
+
+
+  METHOD if_xco_tadir_tool_set_factory~get_tool_set.
+    ro_tool_set = cl_xco_tadir_tool_set=>instance.
+  ENDMETHOD.
+ENDCLASS.

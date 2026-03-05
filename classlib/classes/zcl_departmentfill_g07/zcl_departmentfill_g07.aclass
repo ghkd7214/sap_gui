@@ -1,0 +1,28 @@
+CLASS zcl_departmentfill_g07 DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+CLASS zcl_departmentfill_g07 IMPLEMENTATION.
+  METHOD if_oo_adt_classrun~main.
+
+    DATA: lt_depment TYPE TABLE OF zg07_depment.
+
+    SELECT *
+        INTO CORRESPONDING FIELDS OF TABLE lt_depment
+        FROM  /lrn/depment_rel.
+
+    DELETE FROM zg07_depment.
+    INSERT zg07_depment FROM TABLE lt_depment.
+
+    out->write(  'success'  ).
+
+  ENDMETHOD.
+ENDCLASS.

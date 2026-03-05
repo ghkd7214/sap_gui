@@ -1,0 +1,91 @@
+*&---------------------------------------------------------------------*
+*& Include          ZABAP2_G07_POU_01_REPORTC01
+*&---------------------------------------------------------------------*
+CLASS lcl_event_handler DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm,
+
+      on_button_click FOR EVENT button_click OF cl_gui_alv_grid
+        IMPORTING es_col_id es_row_no,
+
+      on_hotspot_click FOR EVENT hotspot_click OF cl_gui_alv_grid
+        IMPORTING e_row_id e_column_id    .
+
+ENDCLASS.
+
+CLASS lcl_event_handler IMPLEMENTATION.
+  METHOD on_toolbar.
+    DATA: ls_button TYPE stb_button.
+
+    CLEAR ls_button.
+    ls_button-function  = 'SAVE'.
+    ls_button-icon      = icon_system_save.
+    ls_button-text      = 'Save'.
+    ls_button-quickinfo = 'Menu Save'.
+    ls_button-butn_type = '0'.
+    APPEND ls_button TO e_object->mt_toolbar.
+  ENDMETHOD.
+
+  METHOD on_user_command.
+    CASE e_ucomm.
+      WHEN 'SAVE'.
+        PERFORM save_reqest.
+    ENDCASE.
+  ENDMETHOD.
+
+  METHOD on_button_click.
+    DATA: ls_data TYPE ty_list2,
+          lv_ans  TYPE char1.
+
+    CHECK es_col_id-fieldname = 'BTN_TXT'.
+
+    READ TABLE gt_data2 INTO ls_data INDEX es_row_no-row_id.
+    CHECK sy-subrc = 0.
+
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+        titlebar              = '예약 취소'
+        text_question         = '기내식 신청을 취소하시겠습니까?'
+        text_button_1         = 'Yes'
+        text_button_2         = 'No'
+        display_cancel_button = ''
+      IMPORTING
+        answer                = lv_ans.
+
+    IF lv_ans = '1'.
+      UPDATE ztmenureq_g07
+         SET reqts = 'C'
+       WHERE bookid = ls_data-bookid.
+
+      IF sy-subrc = 0.
+        COMMIT WORK.
+        MESSAGE '기내식이 취소되었습니다.' TYPE 'S'.
+
+        PERFORM get_data_200 USING ls_data-customid.
+        PERFORM refresh_grid2.
+      ELSE.
+        ROLLBACK WORK.
+        MESSAGE '오류가 발생했습니다.' TYPE 'E'.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD on_hotspot_click.
+    DATA: ls_data TYPE ty_list2.
+
+    READ TABLE gt_data2 INTO ls_data INDEX e_row_id.
+    IF sy-subrc = 0.
+      CASE e_column_id-fieldname.
+        WHEN 'CONNID' OR 'FLDATE'.
+          PERFORM open_popup_tab USING ls_data.
+        WHEN 'MENUNUMBER'.
+          PERFORM open_popup_meal USING ls_data.
+      ENDCASE.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
